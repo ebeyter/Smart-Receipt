@@ -1,26 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm Sand & Teal */
+  --background: #faf8f3;
+  --surface: #ffffff;
+  --surface-muted: #f3efe6;
+  --foreground: #1f2937;
+  --muted: #6b7280;
+  --border: #e8e1d3;
+
+  --primary: #0f6e63;
+  --primary-hover: #0b5850;
+  --primary-soft: #e3f0ee;
+
+  --accent: #f2994a;
+  --accent-soft: #fdf0e2;
+
+  --success: #2f9e6e;
+  --success-soft: #e5f5ed;
+  --danger: #d64545;
+  --danger-soft: #fbe9e9;
+
+  /* Category palette for charts/badges — validated categorical theme
+     (see dataviz skill: fixed hue order, CVD-safe adjacent pairs) */
+  --cat-1: #2a78d6; /* blue */
+  --cat-2: #eb6834; /* orange */
+  --cat-3: #1baf7a; /* aqua */
+  --cat-4: #eda100; /* yellow */
+  --cat-5: #e87ba4; /* magenta */
+  --cat-6: #008300; /* green */
+  --cat-7: #4a3aa7; /* violet */
+  --cat-8: #e34948; /* red */
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
+  --color-cat-7: var(--cat-7);
+  --color-cat-8: var(--cat-8);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a1815;
+    --surface: #221f1b;
+    --surface-muted: #2a2621;
+    --foreground: #f0ece2;
+    --muted: #a39c8e;
+    --border: #3a352d;
+
+    --primary: #3fb8a8;
+    --primary-hover: #58c9ba;
+    --primary-soft: #1e3a35;
+
+    --accent: #f5a862;
+    --accent-soft: #3a2c1c;
+
+    --success: #4cbb87;
+    --success-soft: #1c3327;
+    --danger: #e57373;
+    --danger-soft: #3a2224;
+
+    --cat-1: #3987e5;
+    --cat-2: #d95926;
+    --cat-3: #199e70;
+    --cat-4: #c98500;
+    --cat-5: #d55181;
+    --cat-6: #008300;
+    --cat-7: #9085e9;
+    --cat-8: #e66767;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

@@ -1,1 +1,70 @@
-# Smart-Receipt
+# Smart Receipt
+
+Fiş fotoğraflarını yükle, yapay zekâ (fal.ai / Claude Sonnet) bilgileri okusun,
+düzenleyip onayladıktan sonra Google Sheets'e ve Google Drive'a otomatik olarak
+kaydolsun.
+
+## Yerel geliştirme
+
+```bash
+npm install
+cp .env.example .env.local   # aşağıdaki değişkenleri doldur
+npm run dev
+```
+
+### Ortam değişkenleri (`.env.local`)
+
+| Değişken | Açıklama |
+|---|---|
+| `FAL_KEY` | [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) adresinden alınır. Sadece sunucu tarafında kullanılır. |
+| `GOOGLE_APPS_SCRIPT_URL` | Aşağıdaki Apps Script kurulumundan sonra elde edilen Web App URL'si. |
+
+## Google Sheet + Apps Script kurulumu
+
+1. Yeni bir Google Sheet oluştur (Apps Script sayfayı otomatik hazırlayacak,
+   ama istersen `apps-script/Code.gs` içindeki `HEADERS` ile aynı başlıkları
+   ilk satıra elle de yazabilirsin: Merchant, Date, Time, Category, Total,
+   Currency, Tax / VAT, Bank Name, Items, Receipt Image URL, Uploaded At).
+2. Sheet içinde **Extensions → Apps Script**'i aç.
+3. `apps-script/Code.gs` dosyasının içeriğini oraya yapıştır, kaydet.
+4. **Deploy → New deployment → Web app**:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+5. Deploy sonrası verilen Web App URL'sini kopyala, `.env.local` içindeki
+   `GOOGLE_APPS_SCRIPT_URL` değerine yapıştır.
+6. İlk çalıştırmada Google, Drive/Sheets izinleri için onay isteyecek —
+   kendi hesabınla onayla. Script ilk fiş geldiğinde Drive'da
+   **"Smart Receipt Uploads"** klasörünü otomatik oluşturur.
+7. Test et: uygulamadan bir fiş gönder, Sheet'te yeni satırın ve Drive'da
+   görselin oluştuğunu doğrula.
+
+### Bonus — haftalık e-posta özeti
+
+Apps Script projesinde **Triggers → Add Trigger**:
+- Function: `weeklyEmailSummary`
+- Event source: Time-driven
+- Type: Week timer
+
+## Vercel'e deploy
+
+1. Repoyu GitHub'a push et (zaten bağlı: `origin` → bu repo).
+2. [vercel.com/new](https://vercel.com/new) üzerinden repoyu import et.
+3. Project Settings → Environment Variables kısmına ekle:
+   - `FAL_KEY`
+   - `GOOGLE_APPS_SCRIPT_URL`
+4. Deploy et, canlı URL'i masaüstü ve mobilde test et.
+
+## Proje yapısı
+
+```
+src/
+  app/
+    page.tsx            # Ana sayfa (yükleme, tablo, özet)
+    api/analyze/         # fal.ai ile fiş okuma
+    api/submit/          # Onaylanan fişleri Apps Script'e gönderir
+    api/history/         # Geçmiş kayıtları Apps Script'ten okur
+  components/            # UploadPanel, ResultsTable, SummaryPanel, ...
+  lib/                   # types, fal.ts, categories, format
+apps-script/
+  Code.gs                # Google Apps Script (Drive + Sheet + haftalık özet)
+```
