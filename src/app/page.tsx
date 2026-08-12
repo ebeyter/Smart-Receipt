@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import UploadPanel from "@/components/UploadPanel";
 import ReceiptPreviewStrip from "@/components/ReceiptPreviewStrip";
 import ResultsTable from "@/components/ResultsTable";
@@ -21,6 +22,7 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [banner, setBanner] = useState<{
@@ -213,6 +215,12 @@ export default function Home() {
     }
   }
 
+  async function handleLogout() {
+    await fetch("/api/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
+
   const pendingCount = receipts.filter((r) => r.status === "pending").length;
   const readyCount = receipts.filter((r) => r.status === "ready").length;
   const errorCount = receipts.filter((r) => r.status === "error").length;
@@ -223,7 +231,7 @@ export default function Home() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-lg text-white">
           🧾
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-lg font-semibold tracking-tight text-foreground">
             Smart Receipt
           </h1>
@@ -231,6 +239,13 @@ export default function Home() {
             Fişlerini tara, yapay zekâ okusun, Google Sheets&apos;e aktarsın.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+        >
+          Çıkış yap
+        </button>
       </header>
 
       {banner && (

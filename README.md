@@ -18,6 +18,16 @@ npm run dev
 |---|---|
 | `FAL_KEY` | [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) adresinden alınır. Sadece sunucu tarafında kullanılır. |
 | `GOOGLE_APPS_SCRIPT_URL` | Aşağıdaki Apps Script kurulumundan sonra elde edilen Web App URL'si. |
+| `APP_PASSWORD` | Uygulamaya giriş şifresi (bkz. [Giriş / şifre koruması](#giriş--şifre-koruması)). Boş bırakılırsa giriş ekranı devre dışı kalır. |
+
+## Giriş / şifre koruması
+
+Uygulamanın kendi kullanıcı hesap sistemi yok — tek bir paylaşılan şifreyle
+korunuyor (`proxy.ts`). `APP_PASSWORD` tanımlıysa `/login` dışındaki tüm
+sayfalar şifre istiyor; doğru şifre girilince imzalı bir `sr_session`
+çerezi (30 gün) düşüyor. Sağ üstteki **"Çıkış yap"** ile çerez siliniyor.
+`APP_PASSWORD` boşsa (veya tanımlı değilse) giriş ekranı tamamen devre dışı
+kalır — herkes uygulamayı açabilir.
 
 ## Google Sheet + Apps Script kurulumu
 
@@ -57,19 +67,24 @@ Apps Script projesinde **Triggers → Add Trigger**:
 3. Project Settings → Environment Variables kısmına ekle:
    - `FAL_KEY`
    - `GOOGLE_APPS_SCRIPT_URL`
+   - `APP_PASSWORD` (giriş şifresi — boş bırakırsan uygulama şifresiz kalır)
 4. Deploy et, canlı URL'i masaüstü ve mobilde test et.
 
 ## Proje yapısı
 
 ```
 src/
+  proxy.ts               # Şifre kontrolü (route öncesi çalışır)
   app/
     page.tsx            # Ana sayfa (yükleme, tablo, özet)
+    login/               # Giriş ekranı
     api/analyze/         # fal.ai ile fiş okuma
     api/submit/          # Onaylanan fişleri Apps Script'e gönderir
     api/history/         # Geçmiş kayıtları Apps Script'ten okur
+    api/login/           # Şifre doğrulama, sr_session çerezi oluşturur
+    api/logout/          # sr_session çerezini siler
   components/            # UploadPanel, ResultsTable, SummaryPanel, ...
-  lib/                   # types, fal.ts, categories, format
+  lib/                   # types, fal.ts, categories, format, auth
 apps-script/
   Code.gs                # Google Apps Script (Drive + Sheet + haftalık özet)
 ```
