@@ -14,6 +14,13 @@
  * 5. Verilen Web app URL'sini .env.local içindeki GOOGLE_APPS_SCRIPT_URL'ye yapıştır.
  * 6. Kurulumu doğrulamak için editörde testReceipt() fonksiyonunu çalıştır ve
  *    Execution log'da (View > Logs) sonucu kontrol et.
+ *
+ * Bonus — Haftalık e-posta özeti:
+ * 7. Fonksiyon menüsünden installWeeklyTrigger() seç ve Run'a bas (her Pazartesi
+ *    09:00 civarı weeklyEmailSummary'yi otomatik çalıştıracak bir tetikleyici kurar).
+ * 8. (Opsiyonel bütçe takibi) Dashboard sayfasında boş bir hücreye aylık bütçeni
+ *    (TRY) yaz, hücreyi seç, Data > Named ranges > adını "MonthlyBudget" yap.
+ * 9. Haftayı beklemeden test etmek için testWeeklyEmailSummary() fonksiyonunu çalıştır.
  */
 
 // Drive'da "Smart Receipt Uploads" klasörünü aç, adres çubuğundaki
@@ -167,55 +174,223 @@ function formatTime_(date) {
 
 /**
  * Bonus: Haftalık harcama özeti e-postası.
- * Kurulum: Triggers > Add Trigger > weeklyEmailSummary > Time-driven > Week timer.
+ *
+ * - Para birimlerini birbirine eklemez; her para birimi kendi toplamıyla gösterilir.
+ * - HTML e-posta: kategori dağılımı renkli çubuklarla, uygulamadaki donut chart /
+ *   Dashboard pasta grafiğiyle aynı renk paletiyle (bkz. CATEGORY_COLORS).
+ * - "MonthlyBudget" adında bir Named Range tanımlarsan (TRY, bkz. dosya başındaki
+ *   kurulum notları) bu ayki bütçe kullanım durumunu da gösterir.
+ * - Gerçek tetikleyici: installWeeklyTrigger(). Anında test: testWeeklyEmailSummary().
  */
+
+const CATEGORY_COLORS = {
+  Market: "#2a78d6",
+  Yemek: "#eb6834",
+  Ulaşım: "#1baf7a",
+  Alışveriş: "#eda100",
+  Sağlık: "#e87ba4",
+  Eğitim: "#008300",
+  Eğlence: "#4a3aa7",
+  Fatura: "#e34948",
+  Diğer: "#9a9a9a",
+};
+
 function weeklyEmailSummary() {
+  const since = new Date();
+  since.setDate(since.getDate() - 7);
+  sendWeeklySummary_(since);
+}
+
+/** Haftayı beklemeden, tüm geçmiş kayıtları dahil ederek anında test e-postası gönderir. */
+function testWeeklyEmailSummary() {
+  sendWeeklySummary_(new Date(2000, 0, 1));
+}
+
+function sendWeeklySummary_(since) {
   const sheet = getSheet_();
   const values = sheet.getDataRange().getValues();
   const rows = values.slice(1);
 
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-  const weekRows = rows.filter(function (row) {
+  const periodRows = rows.filter(function (row) {
+    if (!(row[0] || row[4])) return false;
     const uploadedAt = row[10] ? new Date(row[10]) : null;
-    return uploadedAt && uploadedAt >= oneWeekAgo;
+    return uploadedAt && uploadedAt >= since;
   });
 
-  if (weekRows.length === 0) return;
+  if (periodRows.length === 0) {
+    Logger.log("Bu dönemde fiş bulunamadı, e-posta gönderilmedi.");
+    return;
+  }
 
-  let total = 0;
+  const totalsByCurrency = {};
+  const categoryByCurrency = {};
   let maxExpense = 0;
   let maxMerchant = "";
-  const byCategory = {};
+  let maxCurrency = "";
 
-  weekRows.forEach(function (row) {
+  periodRows.forEach(function (row) {
     const amount = Number(row[4]) || 0;
-    total += amount;
+    const currency = row[5] || "—";
+    const category = row[3] || "Diğer";
+
+    totalsByCurrency[currency] = (totalsByCurrency[currency] || 0) + amount;
+    if (!categoryByCurrency[currency]) categoryByCurrency[currency] = {};
+    categoryByCurrency[currency][category] =
+      (categoryByCurrency[currency][category] || 0) + amount;
+
     if (amount > maxExpense) {
       maxExpense = amount;
-      maxMerchant = row[0];
+      maxMerchant = row[0] || "Bilinmeyen";
+      maxCurrency = currency;
     }
-    const cat = row[3] || "Diğer";
-    byCategory[cat] = (byCategory[cat] || 0) + amount;
   });
 
-  const categoryLines = Object.keys(byCategory)
-    .map(function (cat) {
-      return "- " + cat + ": " + byCategory[cat].toFixed(2);
+  const budget = getMonthlyBudget_();
+  const monthSpendTRY = budget ? getMonthTotalForCurrency_(rows, "TRY") : 0;
+
+  const html = buildWeeklySummaryHtml_({
+    rowCount: periodRows.length,
+    totalsByCurrency: totalsByCurrency,
+    categoryByCurrency: categoryByCurrency,
+    maxExpense: maxExpense,
+    maxMerchant: maxMerchant,
+    maxCurrency: maxCurrency,
+    sheetUrl: SpreadsheetApp.getActiveSpreadsheet().getUrl(),
+    budget: budget,
+    monthSpendTRY: monthSpendTRY,
+  });
+
+  MailApp.sendEmail({
+    to: Session.getActiveUser().getEmail(),
+    subject: "Smart Receipt — Haftalık Özet",
+    body: "Bu e-postayı görüntülemek için HTML destekleyen bir e-posta istemcisi kullanın.",
+    htmlBody: html,
+  });
+}
+
+/** Dashboard sayfasındaki "MonthlyBudget" named range'ini okur (TRY). Yoksa null. */
+function getMonthlyBudget_() {
+  const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName("MonthlyBudget");
+  if (!range) return null;
+  const value = Number(range.getValue());
+  return value > 0 ? value : null;
+}
+
+function getMonthTotalForCurrency_(rows, currency) {
+  const monthKey = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM");
+  let total = 0;
+  rows.forEach(function (row) {
+    const dateStr = row[1] instanceof Date ? formatDate_(row[1]) : String(row[1] || "");
+    if (dateStr.indexOf(monthKey) === 0 && (row[5] || "") === currency) {
+      total += Number(row[4]) || 0;
+    }
+  });
+  return total;
+}
+
+function buildWeeklySummaryHtml_(data) {
+  const currencyBlocks = Object.keys(data.totalsByCurrency)
+    .map(function (currency) {
+      const total = data.totalsByCurrency[currency];
+      const categories = data.categoryByCurrency[currency];
+      const catRows = Object.keys(categories)
+        .sort(function (a, b) {
+          return categories[b] - categories[a];
+        })
+        .map(function (cat) {
+          const amount = categories[cat];
+          const pct = total > 0 ? Math.round((amount / total) * 100) : 0;
+          const color = CATEGORY_COLORS[cat] || "#9a9a9a";
+          return (
+            '<tr>' +
+            '<td style="padding:6px 10px 6px 0;font-size:13px;color:#1f2937;white-space:nowrap;">' +
+            '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' +
+            color +
+            ';margin-right:6px;"></span>' +
+            cat +
+            "</td>" +
+            '<td style="padding:6px 0;width:100%;">' +
+            '<div style="background:#f0efec;border-radius:4px;height:8px;overflow:hidden;">' +
+            '<div style="background:' + color + ';width:' + pct + '%;height:8px;"></div>' +
+            "</div></td>" +
+            '<td style="padding:6px 0 6px 10px;font-size:12px;color:#52514e;white-space:nowrap;text-align:right;">' +
+            amount.toFixed(2) +
+            " " +
+            currency +
+            " (" +
+            pct +
+            "%)</td>" +
+            "</tr>"
+          );
+        })
+        .join("");
+
+      return (
+        '<div style="margin-bottom:22px;">' +
+        '<div style="font-size:24px;font-weight:700;color:#0b0b0b;">' +
+        total.toFixed(2) +
+        " " +
+        currency +
+        "</div>" +
+        '<table style="width:100%;border-collapse:collapse;margin-top:8px;">' +
+        catRows +
+        "</table></div>"
+      );
     })
-    .join("\n");
+    .join("");
 
-  const sheetUrl = SpreadsheetApp.getActiveSpreadsheet().getUrl();
-  const body =
-    "Haftalık harcama özetin:\n\n" +
-    "Toplam: " + total.toFixed(2) + "\n" +
-    "Fiş sayısı: " + weekRows.length + "\n" +
-    "En yüksek harcama: " + maxMerchant + " (" + maxExpense.toFixed(2) + ")\n\n" +
-    "Kategori bazlı:\n" + categoryLines + "\n\n" +
-    "Sheet: " + sheetUrl;
+  let budgetHtml = "";
+  if (data.budget) {
+    const pct = Math.round((data.monthSpendTRY / data.budget) * 100);
+    const over = data.monthSpendTRY > data.budget;
+    const barColor = over ? "#d03b3b" : "#0ca30c";
+    budgetHtml =
+      '<div style="margin-bottom:22px;padding:14px 16px;background:#f9f9f7;border-radius:10px;">' +
+      '<div style="font-size:12px;color:#52514e;margin-bottom:6px;">Bu Ayki Bütçe Durumu (TRY)</div>' +
+      '<div style="font-size:15px;font-weight:600;color:#0b0b0b;">' +
+      data.monthSpendTRY.toFixed(2) +
+      " / " +
+      data.budget.toFixed(2) +
+      " (" + pct + "%)</div>" +
+      '<div style="background:#e1e0d9;border-radius:4px;height:8px;overflow:hidden;margin-top:8px;">' +
+      '<div style="background:' + barColor + ';width:' + Math.min(pct, 100) + '%;height:8px;"></div>' +
+      "</div>" +
+      (over
+        ? '<div style="font-size:12px;color:#d03b3b;margin-top:6px;">⚠️ Bu ay bütçeni aştın.</div>'
+        : "") +
+      "</div>";
+  }
 
-  MailApp.sendEmail(Session.getActiveUser().getEmail(), "Smart Receipt — Haftalık Özet", body);
+  return (
+    '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1f2937;">' +
+    '<div style="font-size:13px;color:#52514e;margin-bottom:4px;">🧾 Smart Receipt</div>' +
+    '<h2 style="font-size:18px;color:#0b0b0b;margin:0 0 18px 0;">Haftalık Harcama Özeti</h2>' +
+    currencyBlocks +
+    budgetHtml +
+    '<div style="font-size:13px;color:#52514e;margin-bottom:18px;">' +
+    "<strong>" + data.rowCount + "</strong> fiş eklendi. En yüksek harcama: <strong>" +
+    data.maxMerchant + "</strong> (" + data.maxExpense.toFixed(2) + " " + data.maxCurrency + ")" +
+    "</div>" +
+    '<a href="' + data.sheetUrl + '" style="display:inline-block;background:#0f6e63;color:#ffffff;' +
+    'text-decoration:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;">' +
+    "Google Sheet'i Aç</a>" +
+    "</div>"
+  );
+}
+
+/** Haftalık e-posta tetikleyicisini kurar (her Pazartesi ~09:00). Tekrar çalıştırmak eskisini değiştirir. */
+function installWeeklyTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    if (trigger.getHandlerFunction() === "weeklyEmailSummary") {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+  ScriptApp.newTrigger("weeklyEmailSummary")
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.MONDAY)
+    .atHour(9)
+    .create();
+  Logger.log("Haftalık tetikleyici kuruldu: her Pazartesi 09:00 civarı.");
 }
 
 /**
