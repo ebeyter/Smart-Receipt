@@ -5,12 +5,20 @@
  * 1. Kendi Google Sheet dosyanı oluştur, ilk satıra şu başlıkları yaz:
  *    Merchant | Date | Time | Category | Total | Currency | Tax / VAT | Bank Name | Items | Receipt Image URL | Uploaded At
  * 2. Extensions > Apps Script'i aç, bu dosyanın içeriğini yapıştır.
- * 3. Google Drive'da "Smart Receipt Uploads" adında bir klasör oluştur (yoksa script otomatik oluşturur).
+ * 3. Google Drive'da "Smart Receipt Uploads" adında bir klasör oluştur, klasörü aç ve
+ *    URL'deki ID'yi aşağıdaki DRIVE_FOLDER_ID'ye yapıştır (boş bırakırsan script klasörü
+ *    isme göre bulur/otomatik oluşturur).
  * 4. Deploy > New deployment > Web app:
  *    - Execute as: Me
  *    - Who has access: Anyone
  * 5. Verilen Web app URL'sini .env.local içindeki GOOGLE_APPS_SCRIPT_URL'ye yapıştır.
+ * 6. Kurulumu doğrulamak için editörde testReceipt() fonksiyonunu çalıştır ve
+ *    Execution log'da (View > Logs) sonucu kontrol et.
  */
+
+// Drive'da "Smart Receipt Uploads" klasörünü aç, adres çubuğundaki
+// https://drive.google.com/drive/folders/<BURASI> ID'sini buraya yapıştır.
+const DRIVE_FOLDER_ID = "1fh5Y7u0aT35KzHt69MR3UtK-6_FXa7Jx";
 
 const SHEET_NAME = "Receipts";
 const DRIVE_FOLDER_NAME = "Smart Receipt Uploads";
@@ -43,6 +51,9 @@ function getSheet_() {
 }
 
 function getFolder_() {
+  if (DRIVE_FOLDER_ID) {
+    return DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  }
   const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
   if (folders.hasNext()) return folders.next();
   return DriveApp.createFolder(DRIVE_FOLDER_NAME);
@@ -124,7 +135,7 @@ function doGet(e) {
         return {
           merchant: row[0],
           date: row[1] instanceof Date ? formatDate_(row[1]) : row[1],
-          time: row[2],
+          time: row[2] instanceof Date ? formatTime_(row[2]) : row[2],
           category: row[3],
           total: Number(row[4]) || 0,
           currency: row[5],
@@ -148,6 +159,10 @@ function doGet(e) {
 
 function formatDate_(date) {
   return Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy-MM-dd");
+}
+
+function formatTime_(date) {
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), "HH:mm");
 }
 
 /**
@@ -201,4 +216,42 @@ function weeklyEmailSummary() {
     "Sheet: " + sheetUrl;
 
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "Smart Receipt — Haftalık Özet", body);
+}
+
+/**
+ * Test: doPost'u sahte bir POST isteğiyle çalıştırır, tek piksellik bir
+ * test görseli Drive'a kaydeder ve Receipts sayfasına bir satır ekler.
+ * Editörde bu fonksiyonu seçip ▶ Run'a bas, sonucu View > Logs'tan izle.
+ */
+function testReceipt() {
+  // 1x1 şeffaf PNG — gerçek fiş görseli olmadan Drive kaydını test etmek için.
+  const testImageDataUrl =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+  const payload = {
+    receipts: [
+      {
+        merchant: "Test Market",
+        date: "2026-08-11",
+        time: "14:30",
+        category: "Market",
+        total: 125.5,
+        currency: "TRY",
+        tax: 11.3,
+        bankName: "Test Bank",
+        items: ["Ekmek", "Süt", "Yumurta"],
+        imageDataUrl: testImageDataUrl,
+        fileName: "test-receipt.png",
+      },
+    ],
+  };
+
+  const fakeEvent = {
+    postData: {
+      contents: JSON.stringify(payload),
+    },
+  };
+
+  const response = doPost(fakeEvent);
+  Logger.log(response.getContent());
 }

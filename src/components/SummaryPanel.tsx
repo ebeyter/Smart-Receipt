@@ -231,18 +231,7 @@ export default function SummaryPanel({ items, isLoading }: Props) {
           <ul className="mt-3 flex flex-col gap-2.5">
             {recent.map((r, idx) => (
               <li key={`${r.merchant}-${r.uploadedAt}-${idx}`} className="flex items-center gap-3">
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
-                  style={{
-                    background:
-                      CATEGORY_META[r.category as keyof typeof CATEGORY_META]
-                        ?.colorVar ?? "var(--muted)",
-                    opacity: 0.16,
-                  }}
-                >
-                  {CATEGORY_META[r.category as keyof typeof CATEGORY_META]
-                    ?.icon ?? "🧾"}
-                </span>
+                <ReceiptThumb receipt={r} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium text-foreground">
                     {r.merchant || "Bilinmeyen"}
@@ -260,6 +249,35 @@ export default function SummaryPanel({ items, isLoading }: Props) {
         )}
       </section>
     </div>
+  );
+}
+
+function ReceiptThumb({ receipt }: { receipt: SavedReceipt }) {
+  const [failed, setFailed] = useState(false);
+  const meta = CATEGORY_META[receipt.category as keyof typeof CATEGORY_META];
+
+  if (receipt.receiptImageUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={receipt.receiptImageUrl}
+        alt={`${receipt.merchant || "Fiş"} görseli`}
+        onError={() => setFailed(true)}
+        className="h-8 w-8 shrink-0 rounded-lg object-cover"
+      />
+    );
+  }
+
+  return (
+    <span
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
+      style={{
+        background: meta?.colorVar ?? "var(--muted)",
+        opacity: 0.16,
+      }}
+    >
+      {meta?.icon ?? "🧾"}
+    </span>
   );
 }
 

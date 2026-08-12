@@ -25,18 +25,23 @@ npm run dev
    ama istersen `apps-script/Code.gs` içindeki `HEADERS` ile aynı başlıkları
    ilk satıra elle de yazabilirsin: Merchant, Date, Time, Category, Total,
    Currency, Tax / VAT, Bank Name, Items, Receipt Image URL, Uploaded At).
-2. Sheet içinde **Extensions → Apps Script**'i aç.
-3. `apps-script/Code.gs` dosyasının içeriğini oraya yapıştır, kaydet.
-4. **Deploy → New deployment → Web app**:
+2. Google Drive'da **"Smart Receipt Uploads"** adında bir klasör oluştur, aç ve
+   adres çubuğundaki `https://drive.google.com/drive/folders/<ID>` kısmındaki
+   ID'yi not al (klasör oluşturmayı script'e bırakıp bu adımı atlayabilirsin).
+3. Sheet içinde **Extensions → Apps Script**'i aç.
+4. `apps-script/Code.gs` dosyasının içeriğini oraya yapıştır. Dosyanın
+   başındaki `DRIVE_FOLDER_ID = ""` satırına 2. adımdaki klasör ID'sini
+   yapıştır (boş bırakırsan script klasörü isme göre bulur/oluşturur), kaydet.
+5. Editörde fonksiyon listesinden **testReceipt**'i seç, ▶ **Run**'a bas.
+   İlk çalıştırmada Google, Drive/Sheets izinleri için onay isteyecek —
+   kendi hesabınla onayla. **View → Logs**'tan `success: true` cevabını,
+   Sheet'te test satırını ve Drive klasöründe test görselini doğrula.
+6. **Deploy → New deployment → Web app**:
    - Execute as: **Me**
    - Who has access: **Anyone**
-5. Deploy sonrası verilen Web App URL'sini kopyala, `.env.local` içindeki
+7. Deploy sonrası verilen Web App URL'sini kopyala, `.env.local` içindeki
    `GOOGLE_APPS_SCRIPT_URL` değerine yapıştır.
-6. İlk çalıştırmada Google, Drive/Sheets izinleri için onay isteyecek —
-   kendi hesabınla onayla. Script ilk fiş geldiğinde Drive'da
-   **"Smart Receipt Uploads"** klasörünü otomatik oluşturur.
-7. Test et: uygulamadan bir fiş gönder, Sheet'te yeni satırın ve Drive'da
-   görselin oluştuğunu doğrula.
+8. Uygulamadan gerçek bir fiş göndererek uçtan uca test et.
 
 ### Bonus — haftalık e-posta özeti
 

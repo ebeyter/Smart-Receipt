@@ -13,11 +13,31 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.text();
-    const upstream = await fetch(scriptUrl, {
+
+    // Apps Script web apps answer POST requests with a 302 to a one-time-use
+    // googleusercontent.com URL; the actual JSON only shows up if that
+    // redirect is followed with a plain GET. Letting fetch auto-follow it
+    // re-sends our POST and Apps Script answers with an error page instead
+    // of JSON — so the redirect is handled manually here.
+    let upstream = await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
+      redirect: "manual",
     });
+
+    if (upstream.status >= 300 && upstream.status < 400) {
+      const location = upstream.headers.get("location");
+      if (!location) {
+        throw new Error("Apps Script yönlendirme adresi bulunamadı.");
+      }
+      upstream = await fetch(location);
+    }
+
+    if (!upstream.ok) {
+      throw new Error(`Apps Script beklenmeyen durum kodu döndürdü: ${upstream.status}`);
+    }
+
     const data = await upstream.json();
 
     if (!data.success) {
@@ -30,9 +50,8 @@ export async function POST(request: Request) {
     return NextResponse.json(data);
   } catch (err) {
     console.error("[/api/submit]", err);
-    return NextResponse.json(
-      { error: "Google Apps Script'e ulaşılamadı." },
-      { status: 502 }
-    );
+    const message =
+      err instanceof Error ? err.message : "Google Apps Script'e ulaşılamadı.";
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }
