@@ -32,6 +32,8 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [history, setHistory] = useState<SavedReceipt[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null);
+  const [monthlyIncome, setMonthlyIncome] = useState<number | null>(null);
 
   const loadHistory = useCallback(async () => {
     setIsHistoryLoading(true);
@@ -40,6 +42,8 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json();
         setHistory(Array.isArray(data.receipts) ? data.receipts : []);
+        setMonthlyBudget(typeof data.monthlyBudget === "number" ? data.monthlyBudget : null);
+        setMonthlyIncome(typeof data.monthlyIncome === "number" ? data.monthlyIncome : null);
       }
     } catch {
       // history is best-effort; the app still works without it
@@ -310,7 +314,12 @@ export default function Home() {
         </div>
 
         <aside>
-          <SummaryPanel items={history} isLoading={isHistoryLoading} />
+          <SummaryPanel
+            items={history}
+            isLoading={isHistoryLoading}
+            monthlyBudget={monthlyBudget}
+            monthlyIncome={monthlyIncome}
+          />
         </aside>
       </main>
     </div>

@@ -13,7 +13,11 @@ export async function GET() {
       cache: "no-store",
     });
     const data = await upstream.json();
-    return NextResponse.json({ receipts: data.receipts || [] });
+    return NextResponse.json({
+      receipts: data.receipts || [],
+      monthlyBudget: typeof data.monthlyBudget === "number" ? data.monthlyBudget : null,
+      monthlyIncome: typeof data.monthlyIncome === "number" ? data.monthlyIncome : null,
+    });
   } catch (err) {
     console.error("[/api/history]", err);
     return NextResponse.json({ receipts: [] });

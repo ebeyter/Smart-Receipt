@@ -8,6 +8,8 @@ import type { SavedReceipt } from "@/lib/types";
 type Props = {
   items: SavedReceipt[];
   isLoading?: boolean;
+  monthlyBudget?: number | null;
+  monthlyIncome?: number | null;
 };
 
 const RADIUS = 60;
@@ -15,7 +17,12 @@ const STROKE = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const GAP = 4; // px surface gap between donut segments
 
-export default function SummaryPanel({ items, isLoading }: Props) {
+export default function SummaryPanel({
+  items,
+  isLoading,
+  monthlyBudget,
+  monthlyIncome,
+}: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
 
@@ -76,6 +83,15 @@ export default function SummaryPanel({ items, isLoading }: Props) {
           {monthItems.length} fiş tarandı
         </p>
       </section>
+
+      {monthlyIncome != null && monthlyIncome > 0 && (
+        <FinancialPlanningCard
+          monthLabel={monthLabel}
+          income={monthlyIncome}
+          spend={monthTotal}
+          budget={monthlyBudget ?? null}
+        />
+      )}
 
       <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between">
@@ -249,6 +265,72 @@ export default function SummaryPanel({ items, isLoading }: Props) {
         )}
       </section>
     </div>
+  );
+}
+
+function FinancialPlanningCard({
+  monthLabel,
+  income,
+  spend,
+  budget,
+}: {
+  monthLabel: string;
+  income: number;
+  spend: number;
+  budget: number | null;
+}) {
+  const remaining = income - spend;
+  const over = spend > income;
+  const barWidth = Math.min((spend / income) * 100, 100);
+
+  return (
+    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-foreground">
+          Finansal Planlama
+        </h2>
+        <span className="text-xs capitalize text-muted">{monthLabel}</span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-[11px] text-muted">Gelir</p>
+          <p className="text-sm font-semibold text-foreground">
+            {formatMoney(income, "TRY")}
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] text-muted">Harcama</p>
+          <p className="text-sm font-semibold text-foreground">
+            {formatMoney(spend, "TRY")}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-muted">
+        <div
+          className="h-2 rounded-full transition-[width]"
+          style={{
+            width: `${barWidth}%`,
+            background: over ? "var(--danger)" : "var(--primary)",
+          }}
+        />
+      </div>
+
+      <p
+        className={`mt-2 text-xs font-medium ${over ? "text-danger" : "text-primary"}`}
+      >
+        {over
+          ? `⚠️ Bu ay gelirini ${formatMoney(Math.abs(remaining), "TRY")} aştın.`
+          : `Kalan / tasarruf: ${formatMoney(remaining, "TRY")}`}
+      </p>
+
+      {budget != null && (
+        <p className="mt-1 text-[11px] text-muted">
+          Bütçe: {formatMoney(budget, "TRY")}
+        </p>
+      )}
+    </section>
   );
 }
 

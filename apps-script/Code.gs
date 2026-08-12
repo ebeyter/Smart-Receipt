@@ -21,6 +21,11 @@
  * 8. (Opsiyonel bütçe takibi) Dashboard sayfasında boş bir hücreye aylık bütçeni
  *    (TRY) yaz, hücreyi seç, Data > Named ranges > adını "MonthlyBudget" yap.
  * 9. Haftayı beklemeden test etmek için testWeeklyEmailSummary() fonksiyonunu çalıştır.
+ *
+ * Bonus — Finansal planlama (uygulama içi):
+ * 10. Dashboard sayfasında başka boş bir hücreye aylık gelirini (TRY) yaz,
+ *     hücreyi seç, Data > Named ranges > adını "MonthlyIncome" yap. Uygulama
+ *     ana sayfasında gelir/gider/tasarruf kartı otomatik görünür.
  */
 
 // Drive'da "Smart Receipt Uploads" klasörünü aç, adres çubuğundaki
@@ -155,7 +160,12 @@ function doGet(e) {
       });
 
     return ContentService.createTextOutput(
-      JSON.stringify({ success: true, receipts: receipts })
+      JSON.stringify({
+        success: true,
+        receipts: receipts,
+        monthlyBudget: getMonthlyBudget_(),
+        monthlyIncome: getMonthlyIncome_(),
+      })
     ).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(
@@ -271,6 +281,14 @@ function sendWeeklySummary_(since) {
 /** Dashboard sayfasındaki "MonthlyBudget" named range'ini okur (TRY). Yoksa null. */
 function getMonthlyBudget_() {
   const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName("MonthlyBudget");
+  if (!range) return null;
+  const value = Number(range.getValue());
+  return value > 0 ? value : null;
+}
+
+/** Dashboard sayfasındaki "MonthlyIncome" named range'ini okur (TRY). Yoksa null. */
+function getMonthlyIncome_() {
+  const range = SpreadsheetApp.getActiveSpreadsheet().getRangeByName("MonthlyIncome");
   if (!range) return null;
   const value = Number(range.getValue());
   return value > 0 ? value : null;
