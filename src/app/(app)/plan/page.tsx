@@ -39,6 +39,7 @@ export default function PlanPage() {
   const isOverBudget = budget != null && spend > budget;
 
   const months = useMemo(() => lastSixMonths(receipts, locale), [receipts, locale]);
+  const peak = Math.max(...months.map((month) => month.total), 0);
   const categories = useMemo(() => byCategory(monthItems), [monthItems]);
 
   return (
@@ -148,32 +149,62 @@ export default function PlanPage() {
       <section className="sr-rise relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
         <CardStripe tint="var(--cat-7)" />
         <h2 className="font-display text-base font-semibold text-foreground">{t("plan.trend")}</h2>
-        <div className="mt-5 flex h-40 items-end gap-2.5">
-          {months.map((month) => {
-            const peak = Math.max(...months.map((m) => m.total), 1);
-            const isCurrent = month.key === monthKey;
-            return (
-              <div key={month.key} className="flex flex-1 flex-col items-center gap-2">
-                <span className="money text-xs text-muted">
-                  {month.total > 0 ? Math.round(month.total).toLocaleString(locale) : ""}
-                </span>
-                <div
-                  className="w-full rounded-t-lg transition-[height] duration-700"
-                  style={{
-                    height: `${Math.max((month.total / peak) * 100, 2)}%`,
-                    background: isCurrent ? "var(--primary)" : "var(--surface-muted)",
-                    border: isCurrent ? "none" : "1px solid var(--border)",
-                  }}
-                  title={formatMoney(month.total, "TRY", locale)}
-                />
-                <span
-                  className={`text-xs capitalize ${isCurrent ? "text-foreground" : "text-muted"}`}
-                >
-                  {month.label}
-                </span>
-              </div>
-            );
-          })}
+
+        {/* Tek serili sütun grafiği: tek renk, tabana oturan 4px yuvarlak uçlar,
+            etiket yalnızca zirve ve içinde bulunulan ayda, gerisi hover'da. */}
+        <div className="mt-6">
+          <div className="flex h-44 items-end gap-2">
+            {months.map((month) => {
+              const isCurrent = month.key === monthKey;
+              const isPeak = peak > 0 && month.total === peak;
+              const barPercent = peak > 0 ? Math.max((month.total / peak) * 100, month.total > 0 ? 4 : 1.5) : 1.5;
+
+              return (
+                <div key={month.key} className="group relative flex h-full flex-1 items-end">
+                  <div
+                    className="w-full rounded-t-[4px] transition-[height] duration-700 ease-out"
+                    style={{
+                      height: `${barPercent}%`,
+                      background: isCurrent
+                        ? "var(--primary)"
+                        : "color-mix(in oklab, var(--primary) 30%, transparent)",
+                    }}
+                  />
+
+                  {(isPeak || isCurrent) && month.total > 0 && (
+                    <span
+                      className="money pointer-events-none absolute inset-x-0 text-center text-xs text-muted"
+                      style={{ bottom: `calc(${barPercent}% + 6px)` }}
+                    >
+                      {compactMoney(month.total, locale)}
+                    </span>
+                  )}
+
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    <span className="capitalize">{month.label}</span>{" "}
+                    <span className="money font-medium">
+                      {formatMoney(month.total, "TRY", locale)}
+                    </span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-border" />
+
+          <div className="mt-2 flex gap-2">
+            {months.map((month) => (
+              <span
+                key={month.key}
+                className={`flex-1 text-center text-xs capitalize ${
+                  month.key === monthKey ? "font-medium text-foreground" : "text-muted"
+                }`}
+              >
+                {month.label}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -261,6 +292,11 @@ function StatTile({ label, value, tint }: { label: string; value: string; tint: 
       </p>
     </div>
   );
+}
+
+/** Sütun etiketleri için kısaltılmış tutar: ₺3.507 gibi, kuruşsuz. */
+function compactMoney(value: number, locale: string) {
+  return "₺" + new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
 }
 
 function currentMonthKey() {
