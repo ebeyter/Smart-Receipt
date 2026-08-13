@@ -28,6 +28,7 @@ npm run dev
 |---|---|
 | `/` | Landing — karşılama, aylık özet şeridi ve **Başla** butonu. |
 | `/panel` | Uygulama: yükleme, analiz, düzenlenebilir tablo, aylık özet. |
+| `/plan` | Finansal planlama: gelir/bütçe girişi, kalan, son 6 ay, kategori dağılımı. |
 | `/ayarlar` | Tema (açık/koyu/sistem), vurgu rengi, varsayılanlar, bağlantı testi, CSV dışa aktarma. |
 
 Proje brief'i gereği kimlik doğrulama yok; uygulama tek kullanıcılı kişisel bir
@@ -65,6 +66,17 @@ mekanizmayı kullanır.
 7. Deploy sonrası verilen Web App URL'sini kopyala, `.env.local` içindeki
    `GOOGLE_APPS_SCRIPT_URL` değerine yapıştır.
 8. Uygulamadan gerçek bir fiş göndererek uçtan uca test et.
+
+### Sheet üzerindeki özet ve pasta grafik
+
+Apps Script editöründe fonksiyon listesinden **`buildDashboard`**'u seçip ▶ Run'a
+bas. "Dashboard" adlı bir sayfa oluşturur: bu ayın toplam harcaması, kategori
+tablosu ve tabloya bağlı bir pasta grafik. Her yeni fiş gönderiminde `doPost`
+bu fonksiyonu çağırdığı için toplam ve grafik kendiliğinden güncellenir.
+
+Aynı sayfadaki **E3** (aylık gelir) ve **E4** (aylık bütçe) hücrelerine değer
+yazarsan, `MonthlyIncome` / `MonthlyBudget` named range'leri üzerinden hem
+haftalık e-posta özetinde hem uygulamanın Planlama sayfasında kullanılır.
 
 ### Bonus — haftalık e-posta özeti
 

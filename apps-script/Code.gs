@@ -18,14 +18,16 @@
  * Bonus — Haftalık e-posta özeti:
  * 7. Fonksiyon menüsünden installWeeklyTrigger() seç ve Run'a bas (her Pazartesi
  *    09:00 civarı weeklyEmailSummary'yi otomatik çalıştıracak bir tetikleyici kurar).
- * 8. (Opsiyonel bütçe takibi) Dashboard sayfasında boş bir hücreye aylık bütçeni
- *    (TRY) yaz, hücreyi seç, Data > Named ranges > adını "MonthlyBudget" yap.
- * 9. Haftayı beklemeden test etmek için testWeeklyEmailSummary() fonksiyonunu çalıştır.
+ * 8. Haftayı beklemeden test etmek için testWeeklyEmailSummary() fonksiyonunu çalıştır.
  *
- * Bonus — Finansal planlama (uygulama içi):
- * 10. Dashboard sayfasında başka boş bir hücreye aylık gelirini (TRY) yaz,
- *     hücreyi seç, Data > Named ranges > adını "MonthlyIncome" yap. Uygulama
- *     ana sayfasında gelir/gider/tasarruf kartı otomatik görünür.
+ * Özet sayfası (aylık toplam + pasta grafik):
+ * 9. Fonksiyon menüsünden buildDashboard() seç ve Run'a bas. "Dashboard" sayfasını
+ *    oluşturur: bu ayın toplamı, kategori tablosu ve ona bağlı pasta grafik.
+ *    Her yeni fiş gönderiminde otomatik tazelenir.
+ * 10. Aynı sayfadaki E3 (aylık gelir) ve E4 (aylık bütçe) hücrelerine değer yazarsan
+ *     hem haftalık e-postada hem uygulamanın Planlama sayfasında kullanılır;
+ *     buildDashboard() bu hücrelerin named range'lerini (MonthlyIncome /
+ *     MonthlyBudget) kendisi tanımlar.
  */
 
 // Drive'da "Smart Receipt Uploads" klasörünü aç, adres çubuğundaki
@@ -123,6 +125,9 @@ function doPost(e) {
       });
     });
 
+    // Yeni satirlar eklendi; Sheet uzerindeki ozet ve pasta grafik tazelensin.
+    buildDashboard();
+
     return ContentService.createTextOutput(
       JSON.stringify({ success: true, saved: saved.length, receipts: saved })
     ).setMimeType(ContentService.MimeType.JSON);
@@ -204,6 +209,90 @@ const CATEGORY_COLORS = {
   Fatura: "#e34948",
   Diğer: "#9a9a9a",
 };
+
+const DASHBOARD_NAME = "Dashboard";
+
+/**
+ * Sheet uzerindeki ozet sayfasini olusturur/tazeler:
+ *   - bu ayin toplam harcamasi
+ *   - kategori bazli tablo ve ona bagli pasta grafik
+ *   - MonthlyIncome / MonthlyBudget hucreleri (named range'leri de kurar)
+ * Her yeni fis gonderiminde doPost tarafindan cagrilir; elle de calistirilabilir.
+ */
+function buildDashboard() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(DASHBOARD_NAME);
+  if (!sheet) sheet = ss.insertSheet(DASHBOARD_NAME);
+
+  const rows = getSheet_().getDataRange().getValues().slice(1);
+  const monthKey = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM");
+
+  const totals = {};
+  let monthTotal = 0;
+  rows.forEach(function (row) {
+    const dateStr = row[1] instanceof Date ? formatDate_(row[1]) : String(row[1] || "");
+    if (dateStr.indexOf(monthKey) !== 0) return;
+    const category = row[3] || "Diğer";
+    const amount = Number(row[4]) || 0;
+    totals[category] = (totals[category] || 0) + amount;
+    monthTotal += amount;
+  });
+
+  const breakdown = Object.keys(totals)
+    .map(function (category) {
+      return [category, totals[category]];
+    })
+    .sort(function (a, b) {
+      return b[1] - a[1];
+    });
+
+  // Yalnizca ozet blogu temizlenir; sagdaki gelir/butce hucreleri korunur.
+  sheet.getRange("A1:B20").clearContent();
+
+  const monthLabel = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MMMM yyyy");
+  sheet.getRange("A1").setValue("Smart Receipt — Özet").setFontSize(14).setFontWeight("bold");
+  sheet.getRange("A3").setValue(monthLabel + " toplam").setFontWeight("bold");
+  sheet.getRange("B3").setValue(monthTotal).setNumberFormat("₺#,##0.00").setFontWeight("bold");
+
+  sheet.getRange("A5:B5").setValues([["Kategori", "Toplam"]]).setFontWeight("bold");
+  if (breakdown.length > 0) {
+    sheet.getRange(6, 1, breakdown.length, 2).setValues(breakdown);
+    sheet.getRange(6, 2, breakdown.length, 1).setNumberFormat("₺#,##0.00");
+  }
+
+  sheet.getRange("D3").setValue("Aylık gelir (₺)");
+  sheet.getRange("D4").setValue("Aylık bütçe (₺)");
+  sheet.getRange("E3:E4").setNumberFormat("₺#,##0.00");
+  if (!ss.getRangeByName("MonthlyIncome")) ss.setNamedRange("MonthlyIncome", sheet.getRange("E3"));
+  if (!ss.getRangeByName("MonthlyBudget")) ss.setNamedRange("MonthlyBudget", sheet.getRange("E4"));
+
+  // Grafik her seferinde bastan kurulur, boylece kategori sayisi degisince uyar.
+  sheet.getCharts().forEach(function (chart) {
+    sheet.removeChart(chart);
+  });
+
+  if (breakdown.length > 0) {
+    const colors = breakdown.map(function (entry) {
+      return CATEGORY_COLORS[entry[0]] || "#9a9a9a";
+    });
+    const chart = sheet
+      .newChart()
+      .setChartType(Charts.ChartType.PIE)
+      .addRange(sheet.getRange(5, 1, breakdown.length + 1, 2))
+      .setPosition(6, 4, 0, 0)
+      .setOption("title", monthLabel + " — kategori dağılımı")
+      .setOption("pieSliceText", "percentage")
+      .setOption("colors", colors)
+      .setOption("width", 460)
+      .setOption("height", 300)
+      .build();
+    sheet.insertChart(chart);
+  }
+
+  sheet.setColumnWidth(1, 160);
+  sheet.setColumnWidth(2, 120);
+  return { monthTotal: monthTotal, categories: breakdown.length };
+}
 
 function weeklyEmailSummary() {
   const since = new Date();
