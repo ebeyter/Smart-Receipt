@@ -53,6 +53,7 @@ export default function ReceiptPreviewStrip({ receipts, onRemove }: Props) {
             }`}
           >
             {t(STATUS_KEY[r.status])}
+            {r.part && ` · ${r.part.index}/${r.part.total}`}
           </div>
         </div>
       ))}

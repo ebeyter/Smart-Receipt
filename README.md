@@ -78,6 +78,14 @@ Aynı sayfadaki **E3** (aylık gelir) ve **E4** (aylık bütçe) hücrelerine de
 yazarsan, `MonthlyIncome` / `MonthlyBudget` named range'leri üzerinden hem
 haftalık e-posta özetinde hem uygulamanın Planlama sayfasında kullanılır.
 
+### Bonus — tek fotoğrafta birden fazla fiş
+
+Model her fotoğraf için fiş **dizisi** döndürüyor (`src/lib/fal.ts`). Fotoğrafta
+yan yana duran iki-üç fiş varsa panel bunları ayrı satırlara bölüyor, önizleme
+etiketinde `2/3` gibi bir sayaç gösteriyor ve "bir fotoğrafta N fiş bulundu"
+bilgisi çıkıyor. Aynı fotoğraftan bölünen satırlar ortak bir `groupId` taşıdığı
+için görsel Drive'a yalnızca bir kez yükleniyor, URL tüm satırlara yazılıyor.
+
 ### Bonus — haftalık e-posta özeti
 
 Apps Script projesinde **Triggers → Add Trigger**:

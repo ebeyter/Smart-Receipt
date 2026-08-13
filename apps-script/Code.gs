@@ -94,8 +94,18 @@ function doPost(e) {
     const now = new Date().toISOString();
     const saved = [];
 
+    // Bir fotografta birden fazla fis bulunduysa satirlar ayni groupId ile gelir;
+    // gorsel Drive'a bir kez yuklenip ayni URL tum satirlara yazilir.
+    const imageUrlByGroup = {};
+
     receipts.forEach(function (r) {
-      const imageUrl = saveImage_(r.imageDataUrl, r.fileName);
+      let imageUrl;
+      if (r.groupId && imageUrlByGroup[r.groupId]) {
+        imageUrl = imageUrlByGroup[r.groupId];
+      } else {
+        imageUrl = saveImage_(r.imageDataUrl, r.fileName);
+        if (r.groupId) imageUrlByGroup[r.groupId] = imageUrl;
+      }
       const row = [
         r.merchant || "",
         r.date || "",

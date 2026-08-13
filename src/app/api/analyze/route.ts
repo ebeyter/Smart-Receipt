@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { extractReceipt, uploadReceiptImage } from "@/lib/fal";
+import { extractReceipts, uploadReceiptImage } from "@/lib/fal";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,8 @@ export async function POST(request: Request) {
     }
 
     const imageUrl = await uploadReceiptImage(file);
-    const extracted = await extractReceipt(imageUrl);
+    // Bir fotoğrafta birden fazla fiş olabilir; her zaman dizi döner.
+    const extracted = await extractReceipts(imageUrl);
 
     return NextResponse.json({ imageUrl, extracted });
   } catch (err) {

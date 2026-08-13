@@ -82,6 +82,7 @@ const tr = {
   "panel.submitError": "Gönderim sırasında hata oluştu.",
   "panel.analyzeFailed": "Analiz başarısız.",
   "panel.genericError": "Hata oluştu.",
+  "panel.splitFound": "Bir fotoğrafta {count} fiş bulundu, ayrı kayıtlara bölündü.",
   "panel.analyzeErrors":
     "{count} fiş analiz edilemedi. Önizlemeden kaldırıp tekrar deneyebilirsin.",
 
@@ -302,6 +303,7 @@ const en: Record<keyof typeof tr, string> = {
   "panel.submitError": "Something went wrong while sending.",
   "panel.analyzeFailed": "Analysis failed.",
   "panel.genericError": "Something went wrong.",
+  "panel.splitFound": "Found {count} receipts in one photo and split them into separate rows.",
   "panel.analyzeErrors":
     "{count} receipts could not be analysed. Remove them from the preview and try again.",
 

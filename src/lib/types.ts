@@ -18,6 +18,10 @@ export type Receipt = {
   id: string;
   status: ReceiptStatus;
   error?: string;
+  /** Aynı fotoğraftan bölünen fişler bu kimliği paylaşır. */
+  groupId?: string;
+  /** Fotoğrafta birden fazla fiş bulunduysa kaçıncısı olduğu (1/3 gibi). */
+  part?: { index: number; total: number };
   file: File;
   imageDataUrl: string;
   fileName: string;

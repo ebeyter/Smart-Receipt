@@ -14,6 +14,33 @@ import type { Receipt, SavedReceipt } from "@/lib/types";
 
 const CONCURRENCY = 3;
 
+type Extracted = {
+  merchant?: string | null;
+  date?: string | null;
+  time?: string | null;
+  category?: string | null;
+  total?: number | null;
+  currency?: string | null;
+  tax?: number | null;
+  bankName?: string | null;
+  items?: string[] | null;
+};
+
+/** Modelden gelen alanları form alanlarına (hepsi string) çevirir. */
+function applyExtracted(extracted: Extracted, fallbackCurrency: string) {
+  return {
+    merchant: extracted.merchant ?? "",
+    date: extracted.date ?? "",
+    time: extracted.time ?? "",
+    category: (extracted.category ?? "") as Receipt["category"],
+    total: extracted.total != null ? String(extracted.total) : "",
+    currency: extracted.currency ?? fallbackCurrency,
+    tax: extracted.tax != null ? String(extracted.tax) : "",
+    bankName: extracted.bankName ?? "",
+    items: extracted.items ?? [],
+  };
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -124,26 +151,33 @@ export default function PanelPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t("panel.analyzeFailed"));
 
-      const e = data.extracted;
-      setReceipts((prev) =>
-        prev.map((r) =>
-          r.id === receipt.id
-            ? {
-                ...r,
-                status: "ready",
-                merchant: e.merchant ?? "",
-                date: e.date ?? "",
-                time: e.time ?? "",
-                category: e.category ?? "",
-                total: e.total != null ? String(e.total) : "",
-                currency: e.currency ?? settings.defaultCurrency,
-                tax: e.tax != null ? String(e.tax) : "",
-                bankName: e.bankName ?? "",
-                items: e.items ?? [],
-              }
-            : r
-        )
-      );
+      // Model bir fotoğrafta birden fazla fiş görebilir; ilki mevcut kaydı
+      // doldurur, kalanlar hemen ardına ayrı kayıt olarak eklenir.
+      const found: Extracted[] = Array.isArray(data.extracted)
+        ? data.extracted
+        : [data.extracted];
+      const total = found.length;
+
+      setReceipts((prev) => {
+        const index = prev.findIndex((r) => r.id === receipt.id);
+        if (index === -1) return prev;
+
+        const base = prev[index];
+        const filled = found.map((extracted, position) => ({
+          ...base,
+          id: position === 0 ? base.id : uid(),
+          status: "ready" as const,
+          groupId: total > 1 ? base.id : undefined,
+          part: total > 1 ? { index: position + 1, total } : undefined,
+          ...applyExtracted(extracted, settings.defaultCurrency),
+        }));
+
+        return [...prev.slice(0, index), ...filled, ...prev.slice(index + 1)];
+      });
+
+      if (total > 1) {
+        setBanner({ kind: "info", message: t("panel.splitFound", { count: total }) });
+      }
     } catch (err) {
       setReceipts((prev) =>
         prev.map((r) =>
@@ -200,6 +234,8 @@ export default function PanelPage() {
             items: r.items,
             imageDataUrl: r.imageDataUrl,
             fileName: r.fileName,
+            // Aynı fotoğraftan bölünen fişler görseli Drive'a bir kez yükler.
+            groupId: r.groupId,
           })),
         }),
         headers: { "Content-Type": "application/json" },
