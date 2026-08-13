@@ -172,13 +172,6 @@ const tr = {
   "settings.autoAnalyzeHint": "Fişi seçer seçmez yapay zekâ okumaya başlasın.",
   "settings.reduceMotion": "Hareketleri azalt",
   "settings.reduceMotionHint": "Animasyonları kapatır.",
-  "settings.finance": "Aylık plan",
-  "settings.financeDesc":
-    "Gelirini yazınca panelde Finansal Planlama kartı açılır. Sheet'inde MonthlyIncome adlı bir aralık varsa o öncelikli olur.",
-  "settings.income": "Aylık gelir (₺)",
-  "settings.incomeHint": "Boş ya da 0 bırakırsan kart gizli kalır.",
-  "settings.budget": "Aylık bütçe (₺)",
-  "settings.budgetHint": "İsteğe bağlı harcama hedefin.",
   "settings.market": "Piyasa takibi",
   "settings.marketDesc":
     "Uygulama piyasa verisi çekmez; ana sayfadaki Piyasalar menüsünden seçtiğin siteye gider. Buradaki seçim listenin başında yıldızlı görünür.",
@@ -394,13 +387,6 @@ const en: Record<keyof typeof tr, string> = {
   "settings.autoAnalyzeHint": "Start reading as soon as a receipt is picked.",
   "settings.reduceMotion": "Reduce motion",
   "settings.reduceMotionHint": "Turns animations off.",
-  "settings.finance": "Monthly plan",
-  "settings.financeDesc":
-    "Enter your income to unlock the Financial planning card on the dashboard. A MonthlyIncome named range in your Sheet takes priority.",
-  "settings.income": "Monthly income (₺)",
-  "settings.incomeHint": "Leave empty or 0 to keep the card hidden.",
-  "settings.budget": "Monthly budget (₺)",
-  "settings.budgetHint": "Optional spending target.",
   "settings.market": "Market tracking",
   "settings.marketDesc":
     "The app does not fetch market data; the Markets menu on the home page opens the site you pick here. Your choice appears first, with a star.",
