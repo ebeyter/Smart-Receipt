@@ -61,7 +61,7 @@ export default function AppHeader() {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`rounded-lg px-3.5 py-2 text-base font-medium transition-colors ${
                   isActive
                     ? "bg-primary-soft text-primary"
                     : "text-muted hover:bg-surface-muted hover:text-foreground"

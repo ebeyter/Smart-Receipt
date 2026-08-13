@@ -20,7 +20,7 @@ export default function ThemeQuickToggle({ className = "" }: { className?: strin
       onClick={() => update({ theme: isDark ? "light" : "dark" })}
       aria-label={label}
       title={label}
-      className={`flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground ${className}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground ${className}`}
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
@@ -29,7 +29,7 @@ export default function ThemeQuickToggle({ className = "" }: { className?: strin
 
 function SunIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
       <circle cx="12" cy="12" r="4" />
       <path
         strokeLinecap="round"
@@ -41,7 +41,7 @@ function SunIcon() {
 
 function MoonIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-4 w-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
