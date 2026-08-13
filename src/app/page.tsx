@@ -1,327 +1,218 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import UploadPanel from "@/components/UploadPanel";
-import ReceiptPreviewStrip from "@/components/ReceiptPreviewStrip";
-import ResultsTable from "@/components/ResultsTable";
-import SummaryPanel from "@/components/SummaryPanel";
-import StatusBanner from "@/components/StatusBanner";
-import { uid } from "@/lib/format";
-import type { Receipt, SavedReceipt } from "@/lib/types";
+import { motion } from "framer-motion";
+import { ArrowRight, Camera, Sparkles, Table2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import AppMark from "@/components/AppMark";
+import FinanceBackdrop from "@/components/FinanceBackdrop";
+import FlowDemo from "@/components/FlowDemo";
+import MarketMenu from "@/components/MarketMenu";
+import MonthPulse from "@/components/MonthPulse";
+import ThemeQuickToggle from "@/components/ThemeQuickToggle";
+import { useSettings } from "@/components/SettingsProvider";
+import { APP_NAME } from "@/lib/brand";
+import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
+import { useIsHydrated } from "@/lib/hooks";
+import type { TKey } from "@/lib/i18n";
+import type { SavedReceipt } from "@/lib/types";
 
-const CONCURRENCY = 3;
+/** Vaadin üç maddesi; renkleri aşağıdaki akış demosunun adımlarıyla eşleşir. */
+const BULLETS = [
+  { icon: Camera, tint: "var(--cat-1)", leadKey: "landing.bullet1.lead", textKey: "landing.bullet1.text" },
+  { icon: Sparkles, tint: "var(--cat-2)", leadKey: "landing.bullet2.lead", textKey: "landing.bullet2.text" },
+  { icon: Table2, tint: "var(--cat-3)", leadKey: "landing.bullet3.lead", textKey: "landing.bullet3.text" },
+] as const;
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+/** Selamlamanın altındaki kısa cesaretlendirme; güne göre dönüşümlü. */
+const MOTIVATION_KEYS = [
+  "landing.motivation1",
+  "landing.motivation2",
+  "landing.motivation3",
+  "landing.motivation4",
+] as const;
 
-export default function Home() {
-  const router = useRouter();
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [banner, setBanner] = useState<{
-    kind: "success" | "error" | "info";
-    message: string;
-  } | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [history, setHistory] = useState<SavedReceipt[]>([]);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
-  const [monthlyBudget, setMonthlyBudget] = useState<number | null>(null);
-  const [monthlyIncome, setMonthlyIncome] = useState<number | null>(null);
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
 
-  const loadHistory = useCallback(async () => {
-    setIsHistoryLoading(true);
-    try {
-      const res = await fetch("/api/history");
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(Array.isArray(data.receipts) ? data.receipts : []);
-        setMonthlyBudget(typeof data.monthlyBudget === "number" ? data.monthlyBudget : null);
-        setMonthlyIncome(typeof data.monthlyIncome === "number" ? data.monthlyIncome : null);
-      }
-    } catch {
-      // history is best-effort; the app still works without it
-    } finally {
-      setIsHistoryLoading(false);
-    }
-  }, []);
+const item = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 0.68, 0.32, 1] as const },
+  },
+};
 
-  useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+export default function LandingPage() {
+  const { settings } = useSettings();
+  const { t } = useT();
+  const isHydrated = useIsHydrated();
+  const receipts = useHistory();
 
-  async function handleFilesSelected(files: File[]) {
-    const newReceipts = await Promise.all(
-      files.map(async (file) => {
-        const imageDataUrl = await fileToDataUrl(file);
-        const receipt: Receipt = {
-          id: uid(),
-          status: "pending",
-          file,
-          imageDataUrl,
-          fileName: file.name,
-          merchant: "",
-          date: "",
-          time: "",
-          category: "",
-          total: "",
-          currency: "TRY",
-          tax: "",
-          bankName: "",
-          items: [],
-        };
-        return receipt;
-      })
-    );
-    setReceipts((prev) => [...prev, ...newReceipts]);
-    setBanner(null);
-  }
-
-  function removeReceipt(id: string) {
-    setReceipts((prev) => prev.filter((r) => r.id !== id));
-  }
-
-  function updateField(
-    id: string,
-    field: keyof Receipt,
-    value: string
-  ) {
-    setReceipts((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
-    );
-  }
-
-  function updateItems(id: string, items: string[]) {
-    setReceipts((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, items } : r))
-    );
-  }
-
-  async function analyzeOne(receipt: Receipt) {
-    setReceipts((prev) =>
-      prev.map((r) =>
-        r.id === receipt.id ? { ...r, status: "analyzing" } : r
-      )
-    );
-    try {
-      const formData = new FormData();
-      formData.append("image", receipt.file);
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Analiz başarısız.");
-
-      const e = data.extracted;
-      setReceipts((prev) =>
-        prev.map((r) =>
-          r.id === receipt.id
-            ? {
-                ...r,
-                status: "ready",
-                merchant: e.merchant ?? "",
-                date: e.date ?? "",
-                time: e.time ?? "",
-                category: e.category ?? "",
-                total: e.total != null ? String(e.total) : "",
-                currency: e.currency ?? "TRY",
-                tax: e.tax != null ? String(e.tax) : "",
-                bankName: e.bankName ?? "",
-                items: e.items ?? [],
-              }
-            : r
-        )
-      );
-    } catch (err) {
-      setReceipts((prev) =>
-        prev.map((r) =>
-          r.id === receipt.id
-            ? {
-                ...r,
-                status: "error",
-                error: err instanceof Error ? err.message : "Hata oluştu.",
-              }
-            : r
-        )
-      );
-    }
-  }
-
-  async function handleAnalyze() {
-    const pending = receipts.filter((r) => r.status === "pending");
-    if (pending.length === 0) return;
-    setIsAnalyzing(true);
-    setBanner(null);
-
-    let index = 0;
-    async function worker() {
-      while (index < pending.length) {
-        const receipt = pending[index++];
-        await analyzeOne(receipt);
-      }
-    }
-    await Promise.all(
-      Array.from({ length: Math.min(CONCURRENCY, pending.length) }, worker)
-    );
-
-    setIsAnalyzing(false);
-  }
-
-  async function handleSubmit() {
-    const ready = receipts.filter((r) => r.status === "ready");
-    if (ready.length === 0) return;
-    setIsSubmitting(true);
-    setBanner(null);
-    try {
-      const res = await fetch("/api/submit", {
-        method: "POST",
-        body: JSON.stringify({
-          receipts: ready.map((r) => ({
-            merchant: r.merchant,
-            date: r.date,
-            time: r.time,
-            category: r.category,
-            total: parseFloat(r.total) || 0,
-            currency: r.currency,
-            tax: r.tax,
-            bankName: r.bankName,
-            items: r.items,
-            imageDataUrl: r.imageDataUrl,
-            fileName: r.fileName,
-          })),
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gönderim başarısız.");
-
-      setReceipts((prev) => prev.filter((r) => r.status !== "ready"));
-      setBanner({
-        kind: "success",
-        message: `${ready.length} fiş başarıyla Google Sheets'e gönderildi.`,
-      });
-      loadHistory();
-    } catch (err) {
-      setBanner({
-        kind: "error",
-        message:
-          err instanceof Error ? err.message : "Gönderim sırasında hata oluştu.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleLogout() {
-    await fetch("/api/logout", { method: "POST" });
-    router.replace("/login");
-    router.refresh();
-  }
-
-  const pendingCount = receipts.filter((r) => r.status === "pending").length;
-  const readyCount = receipts.filter((r) => r.status === "ready").length;
-  const errorCount = receipts.filter((r) => r.status === "error").length;
+  const greeting = buildGreeting(t, isHydrated, settings.displayName);
+  const motivationKey = isHydrated
+    ? MOTIVATION_KEYS[new Date().getDate() % MOTIVATION_KEYS.length]
+    : MOTIVATION_KEYS[0];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-lg text-white">
-          🧾
+    <main className="relative flex min-h-dvh flex-1 flex-col lg:h-dvh lg:overflow-hidden">
+      <FinanceBackdrop />
+
+      <div className="mx-auto flex w-full max-w-6xl shrink-0 items-center gap-3 px-6 py-4">
+        <span className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight text-foreground">
+          <AppMark className="h-9 w-9 rounded-xl" />
+          {APP_NAME}
+        </span>
+        <div className="ml-auto flex items-center gap-1">
+          <Link
+            href="/ayarlar"
+            className="rounded-lg px-3 py-2 text-base font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+          >
+            Ayarlar
+          </Link>
+          <ThemeQuickToggle />
         </div>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Smart Receipt
-          </h1>
-          <p className="text-xs text-muted">
-            Fişlerini tara, yapay zekâ okusun, Google Sheets&apos;e aktarsın.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+      </div>
+
+      <section className="mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[1.1fr_0.9fr]">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col items-center text-center lg:items-start lg:text-left"
         >
-          Çıkış yap
-        </button>
-      </header>
+          <motion.span
+            variants={item}
+            className="rounded-full border border-border bg-surface/70 px-4 py-1.5 text-base font-medium text-muted backdrop-blur"
+          >
+            {greeting}
+          </motion.span>
 
-      {banner && (
-        <div className="mt-5">
-          <StatusBanner
-            kind={banner.kind}
-            message={banner.message}
-            onDismiss={() => setBanner(null)}
-          />
+          <motion.h1
+            variants={item}
+            className="mt-6 bg-gradient-to-br from-primary via-foreground to-accent bg-clip-text font-display text-[clamp(2.5rem,6vw,3.75rem)] font-bold leading-[1.05] tracking-tight text-transparent"
+          >
+            {APP_NAME}
+          </motion.h1>
+
+          <motion.p
+            variants={item}
+            className="mt-2 font-display text-[clamp(1.15rem,2.2vw,1.6rem)] font-semibold leading-snug text-foreground"
+          >
+            {t("app.tagline")}
+          </motion.p>
+
+          <motion.ul variants={item} className="mt-5 flex flex-col gap-2.5 text-left">
+            {BULLETS.map((bullet) => (
+              <li key={bullet.leadKey} className="flex items-center gap-3">
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+                  style={{
+                    background: `color-mix(in oklab, ${bullet.tint} 16%, transparent)`,
+                    color: bullet.tint,
+                  }}
+                >
+                  <bullet.icon className="h-4 w-4" />
+                </span>
+                <span className="text-base text-muted lg:text-lg">
+                  <Highlight>{t(bullet.leadKey)}</Highlight> {t(bullet.textKey)}
+                </span>
+              </li>
+            ))}
+          </motion.ul>
+
+          <motion.div
+            variants={item}
+            className="mt-6 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+          >
+            <Button
+              asChild
+              size="lg"
+              className="group font-display font-semibold shadow-xl shadow-primary/30 transition-transform hover:-translate-y-0.5"
+            >
+              <Link href="/panel">
+                {t("landing.cta")}
+                <ArrowRight
+                  className="-me-1 ms-2 h-5 w-5 opacity-70 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </Link>
+            </Button>
+
+            <MarketMenu />
+          </motion.div>
+
+          <motion.p variants={item} className="mt-3 text-base font-medium text-primary">
+            {t(motivationKey)}
+          </motion.p>
+        </motion.div>
+
+        <div className="mx-auto w-full max-w-[300px] lg:max-w-[min(340px,36dvh)]">
+          <MonthPulse receipts={receipts} reduceMotion={settings.reduceMotion} />
         </div>
-      )}
+      </section>
 
-      {errorCount > 0 && (
-        <div className="mt-3">
-          <StatusBanner
-            kind="error"
-            message={`${errorCount} fiş analiz edilemedi. Önizlemeden kaldırıp tekrar deneyebilirsin.`}
-          />
-        </div>
-      )}
-
-      <main className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-6">
-          <UploadPanel
-            onFilesSelected={handleFilesSelected}
-            pendingCount={pendingCount}
-            totalCount={receipts.length}
-            isAnalyzing={isAnalyzing}
-            onAnalyze={handleAnalyze}
-          />
-
-          {receipts.length > 0 && (
-            <ReceiptPreviewStrip receipts={receipts} onRemove={removeReceipt} />
-          )}
-
-          <ResultsTable
-            receipts={receipts}
-            onChange={updateField}
-            onItemsChange={updateItems}
-            onRemove={removeReceipt}
-          />
-
-          {readyCount > 0 && (
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleSubmit}
-                className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                    Gönderiliyor…
-                  </>
-                ) : (
-                  `Google Sheets'e Gönder (${readyCount})`
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-
-        <aside>
-          <SummaryPanel
-            items={history}
-            isLoading={isHistoryLoading}
-            monthlyBudget={monthlyBudget}
-            monthlyIncome={monthlyIncome}
-          />
-        </aside>
-      </main>
-    </div>
+      <section className="mx-auto w-full max-w-6xl shrink-0 px-6 pb-6 pt-2">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+        >
+          <FlowDemo reduceMotion={settings.reduceMotion} />
+        </motion.div>
+      </section>
+    </main>
   );
+}
+
+function Highlight({ children }: { children: React.ReactNode }) {
+  return <strong className="font-semibold text-foreground">{children}</strong>;
+}
+
+/** Saate göre selamlama; hydration farkı olmaması için yalnızca tarayıcıda hesaplanır. */
+function buildGreeting(
+  t: (key: TKey) => string,
+  isHydrated: boolean,
+  displayName: string
+) {
+  const name = displayName.trim();
+  const hour = isHydrated ? new Date().getHours() : -1;
+  const base =
+    hour < 0
+      ? t("greet.welcome")
+      : hour < 6
+        ? t("greet.night")
+        : hour < 12
+          ? t("greet.morning")
+          : hour < 18
+            ? t("greet.day")
+            : t("greet.evening");
+
+  return name ? `${base}, ${name} 👋` : `${base} 👋`;
+}
+
+function useHistory() {
+  const [receipts, setReceipts] = useState<SavedReceipt[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/history", { cache: "no-store" });
+        const data = await res.json();
+        if (!cancelled) setReceipts(Array.isArray(data.receipts) ? data.receipts : []);
+      } catch {
+        // Geçmiş okunamazsa halka boş haliyle gösterilir.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return receipts;
 }

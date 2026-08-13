@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CATEGORY_META } from "@/lib/categories";
 import { formatDate, formatMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import type { SavedReceipt } from "@/lib/types";
 
 type Props = {
@@ -23,12 +24,13 @@ export default function SummaryPanel({
   monthlyBudget,
   monthlyIncome,
 }: Props) {
+  const { t, locale, category: categoryLabel } = useT();
   const [hovered, setHovered] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
 
   const now = new Date();
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthLabel = new Intl.DateTimeFormat("tr-TR", {
+  const monthLabel = new Intl.DateTimeFormat(locale, {
     month: "long",
     year: "numeric",
   }).format(now);
@@ -71,16 +73,14 @@ export default function SummaryPanel({
     <div className="flex flex-col gap-5">
       <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">
-            Aylık Özet
-          </h2>
-          <span className="text-xs capitalize text-muted">{monthLabel}</span>
+          <h2 className="text-base font-semibold text-foreground">{t("summary.monthly")}</h2>
+          <span className="text-sm capitalize text-muted">{monthLabel}</span>
         </div>
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-          {formatMoney(monthTotal, currency)}
+        <p className="money mt-2 text-2xl font-semibold tracking-tight text-foreground">
+          {formatMoney(monthTotal, currency, locale)}
         </p>
-        <p className="mt-0.5 text-xs text-muted">
-          {monthItems.length} fiş tarandı
+        <p className="mt-0.5 text-sm text-muted">
+          {t("summary.scanned", { count: monthItems.length })}
         </p>
       </section>
 
@@ -95,16 +95,14 @@ export default function SummaryPanel({
 
       <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">
-            Kategori Dağılımı
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">{t("summary.categories")}</h2>
           {breakdown.length > 0 && (
             <button
               type="button"
               onClick={() => setShowTable((v) => !v)}
-              className="text-[11px] font-medium text-primary hover:underline"
+              className="text-xs font-medium text-primary hover:underline"
             >
-              {showTable ? "Grafiği göster" : "Tablo görünümü"}
+              {showTable ? t("summary.chartView") : t("summary.tableView")}
             </button>
           )}
         </div>
@@ -114,15 +112,13 @@ export default function SummaryPanel({
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-primary" />
           </div>
         ) : breakdown.length === 0 ? (
-          <p className="mt-4 text-xs text-muted">
-            Bu ay için henüz kayıt yok.
-          </p>
+          <p className="mt-4 text-sm text-muted">{t("summary.noRecords")}</p>
         ) : showTable ? (
-          <table className="mt-4 w-full text-xs">
+          <table className="mt-4 w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] uppercase text-muted">
-                <th className="pb-2 font-medium">Kategori</th>
-                <th className="pb-2 text-right font-medium">Tutar</th>
+              <tr className="text-left text-xs uppercase text-muted">
+                <th className="pb-2 font-medium">{t("summary.category")}</th>
+                <th className="pb-2 text-right font-medium">{t("summary.amount")}</th>
                 <th className="pb-2 text-right font-medium">%</th>
               </tr>
             </thead>
@@ -139,10 +135,10 @@ export default function SummaryPanel({
                           ]?.colorVar ?? categoryFallback(idx),
                       }}
                     />
-                    {b.category}
+                    {categoryLabel(b.category)}
                   </td>
-                  <td className="py-1.5 text-right font-medium text-foreground">
-                    {formatMoney(b.total, currency)}
+                  <td className="money py-1.5 text-right font-medium text-foreground">
+                    {formatMoney(b.total, currency, locale)}
                   </td>
                   <td className="py-1.5 text-right text-muted">
                     {((b.total / monthTotal) * 100).toFixed(0)}%
@@ -196,13 +192,13 @@ export default function SummaryPanel({
                 </g>
               </svg>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[10px] text-muted">
-                  {hovered ?? "Toplam"}
+                <span className="text-xs text-muted">
+                  {hovered ? categoryLabel(hovered) : t("summary.total")}
                 </span>
-                <span className="text-sm font-semibold text-foreground">
+                <span className="text-base font-semibold text-foreground">
                   {hovered
                     ? `${((breakdown.find((b) => b.category === hovered)!.total / monthTotal) * 100).toFixed(0)}%`
-                    : formatMoney(monthTotal, currency)}
+                    : formatMoney(monthTotal, currency, locale)}
                 </span>
               </div>
             </div>
@@ -213,7 +209,7 @@ export default function SummaryPanel({
                   key={b.category}
                   onMouseEnter={() => setHovered(b.category)}
                   onMouseLeave={() => setHovered(null)}
-                  className="flex items-center justify-between rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-muted"
+                  className="flex items-center justify-between rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-surface-muted"
                 >
                   <span className="flex items-center gap-1.5 text-foreground">
                     <span
@@ -225,10 +221,10 @@ export default function SummaryPanel({
                           ]?.colorVar ?? categoryFallback(idx),
                       }}
                     />
-                    {b.category}
+                    {categoryLabel(b.category)}
                   </span>
-                  <span className="font-medium text-muted">
-                    {formatMoney(b.total, currency)}
+                  <span className="money font-medium text-muted">
+                    {formatMoney(b.total, currency, locale)}
                   </span>
                 </li>
               ))}
@@ -238,26 +234,24 @@ export default function SummaryPanel({
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">
-          Son Kayıtlar
-        </h2>
+        <h2 className="text-base font-semibold text-foreground">{t("summary.recent")}</h2>
         {recent.length === 0 ? (
-          <p className="mt-3 text-xs text-muted">Henüz gönderilmiş fiş yok.</p>
+          <p className="mt-3 text-sm text-muted">{t("summary.noRecent")}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2.5">
             {recent.map((r, idx) => (
               <li key={`${r.merchant}-${r.uploadedAt}-${idx}`} className="flex items-center gap-3">
                 <ReceiptThumb receipt={r} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-foreground">
-                    {r.merchant || "Bilinmeyen"}
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {r.merchant || t("summary.unknown")}
                   </p>
-                  <p className="text-[11px] text-muted">
-                    {r.category || "Diğer"} · {formatDate(r.date)}
+                  <p className="text-xs text-muted">
+                    {categoryLabel(r.category || "Diğer")} · {formatDate(r.date, locale)}
                   </p>
                 </div>
-                <span className="shrink-0 text-xs font-semibold text-foreground">
-                  {formatMoney(r.total, r.currency || "TRY")}
+                <span className="money shrink-0 text-sm font-semibold text-foreground">
+                  {formatMoney(r.total, r.currency || "TRY", locale)}
                 </span>
               </li>
             ))}
@@ -279,6 +273,7 @@ function FinancialPlanningCard({
   spend: number;
   budget: number | null;
 }) {
+  const { t, locale } = useT();
   const remaining = income - spend;
   const over = spend > income;
   const barWidth = Math.min((spend / income) * 100, 100);
@@ -286,23 +281,21 @@ function FinancialPlanningCard({
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">
-          Finansal Planlama
-        </h2>
-        <span className="text-xs capitalize text-muted">{monthLabel}</span>
+        <h2 className="text-base font-semibold text-foreground">{t("summary.planning")}</h2>
+        <span className="text-sm capitalize text-muted">{monthLabel}</span>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[11px] text-muted">Gelir</p>
-          <p className="text-sm font-semibold text-foreground">
-            {formatMoney(income, "TRY")}
+          <p className="text-sm text-muted">{t("summary.income")}</p>
+          <p className="money text-base font-semibold text-foreground">
+            {formatMoney(income, "TRY", locale)}
           </p>
         </div>
         <div>
-          <p className="text-[11px] text-muted">Harcama</p>
-          <p className="text-sm font-semibold text-foreground">
-            {formatMoney(spend, "TRY")}
+          <p className="text-sm text-muted">{t("summary.spend")}</p>
+          <p className="money text-base font-semibold text-foreground">
+            {formatMoney(spend, "TRY", locale)}
           </p>
         </div>
       </div>
@@ -318,16 +311,16 @@ function FinancialPlanningCard({
       </div>
 
       <p
-        className={`mt-2 text-xs font-medium ${over ? "text-danger" : "text-primary"}`}
+        className={`mt-2 text-sm font-medium ${over ? "text-danger" : "text-primary"}`}
       >
         {over
-          ? `⚠️ Bu ay gelirini ${formatMoney(Math.abs(remaining), "TRY")} aştın.`
-          : `Kalan / tasarruf: ${formatMoney(remaining, "TRY")}`}
+          ? t("summary.over", { amount: formatMoney(Math.abs(remaining), "TRY", locale) })
+          : t("summary.remaining", { amount: formatMoney(remaining, "TRY", locale) })}
       </p>
 
       {budget != null && (
-        <p className="mt-1 text-[11px] text-muted">
-          Bütçe: {formatMoney(budget, "TRY")}
+        <p className="mt-1 text-xs text-muted">
+          {t("summary.budget", { amount: formatMoney(budget, "TRY", locale) })}
         </p>
       )}
     </section>
@@ -352,7 +345,7 @@ function ReceiptThumb({ receipt }: { receipt: SavedReceipt }) {
 
   return (
     <span
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base"
       style={{
         background: meta?.colorVar ?? "var(--muted)",
         opacity: 0.16,

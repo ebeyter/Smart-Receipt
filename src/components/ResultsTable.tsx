@@ -3,6 +3,7 @@
 import type { Receipt } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 type Field = keyof Pick<
   Receipt,
@@ -24,7 +25,7 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "w-full rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 export default function ResultsTable({
   receipts,
@@ -32,6 +33,7 @@ export default function ResultsTable({
   onItemsChange,
   onRemove,
 }: Props) {
+  const { t, locale, category } = useT();
   const visible = receipts.filter((r) => r.status !== "pending");
   if (visible.length === 0) return null;
 
@@ -43,26 +45,24 @@ export default function ResultsTable({
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">
-          Sonuçları Kontrol Et
-        </h2>
-        <span className="text-xs text-muted">{visible.length} fiş</span>
+        <h2 className="text-base font-semibold text-foreground">{t("results.title")}</h2>
+        <span className="text-sm text-muted">{t("results.count", { count: visible.length })}</span>
       </div>
 
       {/* Desktop table */}
       <div className="mt-4 hidden overflow-x-auto md:block">
         <table className="w-full min-w-[900px] border-separate border-spacing-y-2 text-left">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-muted">
-              <th className="px-2 font-medium">Mağaza</th>
-              <th className="px-2 font-medium">Tarih</th>
-              <th className="px-2 font-medium">Saat</th>
-              <th className="px-2 font-medium">Kategori</th>
-              <th className="px-2 font-medium">Tutar</th>
-              <th className="px-2 font-medium">Para Birimi</th>
-              <th className="px-2 font-medium">Vergi</th>
-              <th className="px-2 font-medium">Banka</th>
-              <th className="px-2 font-medium">Ürünler</th>
+            <tr className="text-xs uppercase tracking-wide text-muted">
+              <th className="px-2 font-medium">{t("results.merchant")}</th>
+              <th className="px-2 font-medium">{t("results.date")}</th>
+              <th className="px-2 font-medium">{t("results.time")}</th>
+              <th className="px-2 font-medium">{t("results.category")}</th>
+              <th className="px-2 font-medium">{t("results.amount")}</th>
+              <th className="px-2 font-medium">{t("results.currency")}</th>
+              <th className="px-2 font-medium">{t("results.tax")}</th>
+              <th className="px-2 font-medium">{t("results.bank")}</th>
+              <th className="px-2 font-medium">{t("results.items")}</th>
               <th className="px-2 font-medium"></th>
             </tr>
           </thead>
@@ -73,7 +73,7 @@ export default function ResultsTable({
                   <input
                     className={inputClass}
                     value={r.merchant}
-                    placeholder="Mağaza"
+                    placeholder={t("results.merchant")}
                     onChange={(e) => onChange(r.id, "merchant", e.target.value)}
                   />
                 </td>
@@ -99,10 +99,10 @@ export default function ResultsTable({
                     value={r.category}
                     onChange={(e) => onChange(r.id, "category", e.target.value)}
                   >
-                    <option value="">Seç…</option>
+                    <option value="">{t("results.select")}</option>
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
-                        {c}
+                        {category(c)}
                       </option>
                     ))}
                   </select>
@@ -143,7 +143,7 @@ export default function ResultsTable({
                   <input
                     className={inputClass}
                     value={r.items.join(", ")}
-                    placeholder="ürün, ürün"
+                    placeholder={t("results.itemsPlaceholder")}
                     onChange={(e) =>
                       onItemsChange(
                         r.id,
@@ -159,7 +159,7 @@ export default function ResultsTable({
                   <button
                     type="button"
                     onClick={() => onRemove(r.id)}
-                    aria-label="Fişi sil"
+                    aria-label={t("results.delete")}
                     className="rounded-md p-1.5 text-muted transition-colors hover:bg-danger-soft hover:text-danger"
                   >
                     🗑️
@@ -182,21 +182,21 @@ export default function ResultsTable({
               <input
                 className={`${inputClass} font-medium`}
                 value={r.merchant}
-                placeholder="Mağaza"
+                placeholder={t("results.merchant")}
                 onChange={(e) => onChange(r.id, "merchant", e.target.value)}
               />
               <button
                 type="button"
                 onClick={() => onRemove(r.id)}
-                aria-label="Fişi sil"
+                aria-label={t("results.delete")}
                 className="ml-2 shrink-0 rounded-md p-1.5 text-muted hover:bg-danger-soft hover:text-danger"
               >
                 🗑️
               </button>
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <label className="text-[10px] text-muted">
-                Tarih
+              <label className="text-sm text-muted">
+                {t("results.date")}
                 <input
                   type="date"
                   className={`${inputClass} mt-0.5`}
@@ -204,8 +204,8 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "date", e.target.value)}
                 />
               </label>
-              <label className="text-[10px] text-muted">
-                Saat
+              <label className="text-sm text-muted">
+                {t("results.time")}
                 <input
                   type="time"
                   className={`${inputClass} mt-0.5`}
@@ -213,23 +213,23 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "time", e.target.value)}
                 />
               </label>
-              <label className="text-[10px] text-muted">
-                Kategori
+              <label className="text-sm text-muted">
+                {t("results.category")}
                 <select
                   className={`${inputClass} mt-0.5`}
                   value={r.category}
                   onChange={(e) => onChange(r.id, "category", e.target.value)}
                 >
-                  <option value="">Seç…</option>
+                  <option value="">{t("results.select")}</option>
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
-                      {c}
+                      {category(c)}
                     </option>
                   ))}
                 </select>
               </label>
-              <label className="text-[10px] text-muted">
-                Tutar
+              <label className="text-sm text-muted">
+                {t("results.amount")}
                 <input
                   className={`${inputClass} mt-0.5`}
                   value={r.total}
@@ -237,8 +237,8 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "total", e.target.value)}
                 />
               </label>
-              <label className="text-[10px] text-muted">
-                Para Birimi
+              <label className="text-sm text-muted">
+                {t("results.currency")}
                 <input
                   className={`${inputClass} mt-0.5`}
                   value={r.currency}
@@ -246,8 +246,8 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "currency", e.target.value)}
                 />
               </label>
-              <label className="text-[10px] text-muted">
-                Vergi
+              <label className="text-sm text-muted">
+                {t("results.tax")}
                 <input
                   className={`${inputClass} mt-0.5`}
                   value={r.tax}
@@ -255,8 +255,8 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "tax", e.target.value)}
                 />
               </label>
-              <label className="col-span-2 text-[10px] text-muted">
-                Banka
+              <label className="col-span-2 text-sm text-muted">
+                {t("results.bank")}
                 <input
                   className={`${inputClass} mt-0.5`}
                   value={r.bankName}
@@ -264,12 +264,12 @@ export default function ResultsTable({
                   onChange={(e) => onChange(r.id, "bankName", e.target.value)}
                 />
               </label>
-              <label className="col-span-2 text-[10px] text-muted">
-                Ürünler
+              <label className="col-span-2 text-sm text-muted">
+                {t("results.items")}
                 <input
                   className={`${inputClass} mt-0.5`}
                   value={r.items.join(", ")}
-                  placeholder="ürün, ürün"
+                  placeholder={t("results.itemsPlaceholder")}
                   onChange={(e) =>
                     onItemsChange(
                       r.id,
@@ -287,9 +287,9 @@ export default function ResultsTable({
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <span className="text-xs text-muted">Toplam Tutar</span>
-        <span className="text-sm font-semibold text-foreground">
-          {formatMoney(total, currency)}
+        <span className="text-sm text-muted">{t("results.grandTotal")}</span>
+        <span className="text-base font-semibold text-foreground">
+          {formatMoney(total, currency, locale)}
         </span>
       </div>
     </section>

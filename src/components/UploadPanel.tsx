@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useT } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   onFilesSelected: (files: File[]) => void;
@@ -17,6 +19,7 @@ export default function UploadPanel({
   isAnalyzing,
   onAnalyze,
 }: Props) {
+  const { t } = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -31,11 +34,8 @@ export default function UploadPanel({
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-      <h2 className="text-sm font-semibold text-foreground">Fiş Yükle</h2>
-      <p className="mt-1 text-xs text-muted">
-        Bilgisayarından yükle ya da kamerayla çek. Aynı anda birden fazla fiş
-        seçebilirsin.
-      </p>
+      <h2 className="text-base font-semibold text-foreground">{t("upload.title")}</h2>
+      <p className="mt-1 text-sm text-muted">{t("upload.desc")}</p>
 
       <div
         onDragOver={(e) => {
@@ -71,10 +71,8 @@ export default function UploadPanel({
             />
           </svg>
         </div>
-        <p className="mt-3 text-sm font-medium text-foreground">
-          Fiş görsellerini sürükle bırak
-        </p>
-        <p className="mt-0.5 text-xs text-muted">ya da göz atmak için tıkla</p>
+        <p className="mt-3 text-base font-medium text-foreground">{t("upload.drop")}</p>
+        <p className="mt-0.5 text-sm text-muted">{t("upload.browse")}</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -89,17 +87,14 @@ export default function UploadPanel({
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-surface-muted"
-        >
-          Fotoğraf Yükle
-        </button>
-        <button
-          type="button"
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+          {t("upload.fromFile")}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
           onClick={() => cameraInputRef.current?.click()}
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-surface-muted"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -116,8 +111,8 @@ export default function UploadPanel({
             />
             <circle cx="12" cy="13" r="3.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Kamerayla Çek
-        </button>
+          {t("upload.camera")}
+        </Button>
         <input
           ref={cameraInputRef}
           type="file"
@@ -132,27 +127,29 @@ export default function UploadPanel({
       </div>
 
       {totalCount > 0 && (
-        <p className="mt-3 text-xs text-muted">
-          {totalCount} fiş yüklendi
-          {pendingCount > 0 ? ` · ${pendingCount} analiz bekliyor` : ""}
+        <p className="mt-3 text-sm text-muted">
+          {t("upload.loaded", { count: totalCount })}
+          {pendingCount > 0 ? t("upload.waiting", { count: pendingCount }) : ""}
         </p>
       )}
 
-      <button
-        type="button"
+      <Button
         disabled={pendingCount === 0 || isAnalyzing}
         onClick={onAnalyze}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-4 w-full gap-2 font-semibold"
       >
         {isAnalyzing ? (
           <>
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-            Analiz ediliyor…
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-primary/40 border-t-on-primary" />
+            {t("upload.analyzing")}
           </>
         ) : (
-          <>Fişleri Analiz Et{pendingCount > 0 ? ` (${pendingCount})` : ""}</>
+          <>
+            {t("upload.analyze")}
+            {pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </>
         )}
-      </button>
+      </Button>
     </section>
   );
 }

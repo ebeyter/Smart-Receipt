@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/lib/i18n";
+
 type Props = {
   kind: "success" | "error" | "info";
   message: string;
@@ -19,12 +21,14 @@ const ICON: Record<Props["kind"], string> = {
 };
 
 export default function StatusBanner({ kind, message, onDismiss }: Props) {
+  const { t } = useT();
+
   return (
     <div
       role="status"
-      className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm ${STYLES[kind]}`}
+      className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 text-base ${STYLES[kind]}`}
     >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/15 text-xs font-bold">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/15 text-sm font-bold">
         {ICON[kind]}
       </span>
       <span className="flex-1">{message}</span>
@@ -32,7 +36,7 @@ export default function StatusBanner({ kind, message, onDismiss }: Props) {
         <button
           type="button"
           onClick={onDismiss}
-          aria-label="Kapat"
+          aria-label={t("banner.dismiss")}
           className="shrink-0 text-current/70 hover:text-current"
         >
           ✕

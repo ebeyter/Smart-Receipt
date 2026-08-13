@@ -1,36 +1,78 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Tema
+   Tüm renkler light-dark(açık, koyu) ile tek yerde tanımlanıyor; hangisinin
+   kazanacağını :root üzerindeki `color-scheme` belirliyor. Böylece tema
+   değiştirmek için tek bir data-theme özniteliği yetiyor (bkz. lib/settings.ts).
+     - data-theme yok  → sistem tercihi (color-scheme: light dark)
+     - data-theme=light → hep açık
+     - data-theme=dark  → hep koyu
+--------------------------------------------------------------------------- */
 :root {
+  color-scheme: light dark;
+
   /* Warm Sand & Teal */
-  --background: #faf8f3;
-  --surface: #ffffff;
-  --surface-muted: #f3efe6;
-  --foreground: #1f2937;
-  --muted: #6b7280;
-  --border: #e8e1d3;
+  --background: light-dark(#faf8f3, #1a1815);
+  --surface: light-dark(#ffffff, #221f1b);
+  --surface-muted: light-dark(#f3efe6, #2a2621);
+  --foreground: light-dark(#1f2937, #f0ece2);
+  --muted: light-dark(#6b7280, #a39c8e);
+  --border: light-dark(#e8e1d3, #3a352d);
 
-  --primary: #0f6e63;
-  --primary-hover: #0b5850;
-  --primary-soft: #e3f0ee;
+  --primary: light-dark(#0f6e63, #3fb8a8);
+  --primary-hover: light-dark(#0b5850, #58c9ba);
+  --primary-soft: light-dark(#e3f0ee, #1e3a35);
+  --on-primary: light-dark(#ffffff, #10201d);
 
-  --accent: #f2994a;
-  --accent-soft: #fdf0e2;
+  --accent: light-dark(#f2994a, #f5a862);
+  --accent-soft: light-dark(#fdf0e2, #3a2c1c);
 
-  --success: #2f9e6e;
-  --success-soft: #e5f5ed;
-  --danger: #d64545;
-  --danger-soft: #fbe9e9;
+  --success: light-dark(#2f9e6e, #4cbb87);
+  --success-soft: light-dark(#e5f5ed, #1c3327);
+  --danger: light-dark(#d64545, #e57373);
+  --danger-soft: light-dark(#fbe9e9, #3a2224);
 
   /* Category palette for charts/badges — validated categorical theme
      (see dataviz skill: fixed hue order, CVD-safe adjacent pairs) */
-  --cat-1: #2a78d6; /* blue */
-  --cat-2: #eb6834; /* orange */
-  --cat-3: #1baf7a; /* aqua */
-  --cat-4: #eda100; /* yellow */
-  --cat-5: #e87ba4; /* magenta */
-  --cat-6: #008300; /* green */
-  --cat-7: #4a3aa7; /* violet */
-  --cat-8: #e34948; /* red */
+  --cat-1: light-dark(#2a78d6, #3987e5); /* blue */
+  --cat-2: light-dark(#eb6834, #d95926); /* orange */
+  --cat-3: light-dark(#1baf7a, #199e70); /* aqua */
+  --cat-4: light-dark(#eda100, #c98500); /* yellow */
+  --cat-5: light-dark(#e87ba4, #d55181); /* magenta */
+  --cat-6: light-dark(#008300, #008300); /* green */
+  --cat-7: light-dark(#4a3aa7, #9085e9); /* violet */
+  --cat-8: light-dark(#e34948, #e66767); /* red */
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Vurgu rengi — ayarlardan seçilir, varsayılan yukarıdaki teal. */
+:root[data-accent="indigo"] {
+  --primary: light-dark(#4c4ddc, #8f8ef5);
+  --primary-hover: light-dark(#3b3cc4, #a5a4f8);
+  --primary-soft: light-dark(#e8e8fb, #262647);
+  --on-primary: light-dark(#ffffff, #16162e);
+}
+
+:root[data-accent="amber"] {
+  --primary: light-dark(#b4690e, #f0ac4c);
+  --primary-hover: light-dark(#95560a, #f7c176);
+  --primary-soft: light-dark(#fdf0dd, #3a2b17);
+  --on-primary: light-dark(#ffffff, #2a1d0a);
+}
+
+:root[data-accent="rose"] {
+  --primary: light-dark(#c04264, #ef8aa6);
+  --primary-hover: light-dark(#a3354f, #f5a6bc);
+  --primary-soft: light-dark(#fce9ee, #3d2028);
+  --on-primary: light-dark(#ffffff, #2b1119);
 }
 
 @theme inline {
@@ -44,6 +86,7 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
 
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
@@ -64,41 +107,70 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-sora);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1815;
-    --surface: #221f1b;
-    --surface-muted: #2a2621;
-    --foreground: #f0ece2;
-    --muted: #a39c8e;
-    --border: #3a352d;
-
-    --primary: #3fb8a8;
-    --primary-hover: #58c9ba;
-    --primary-soft: #1e3a35;
-
-    --accent: #f5a862;
-    --accent-soft: #3a2c1c;
-
-    --success: #4cbb87;
-    --success-soft: #1c3327;
-    --danger: #e57373;
-    --danger-soft: #3a2224;
-
-    --cat-1: #3987e5;
-    --cat-2: #d95926;
-    --cat-3: #199e70;
-    --cat-4: #c98500;
-    --cat-5: #d55181;
-    --cat-6: #008300;
-    --cat-7: #9085e9;
-    --cat-8: #e66767;
-  }
+/* Para tutarları: mono + hizalı rakamlar (bankacılık uygulamalarının imzası). */
+.money {
+  font-family: var(--font-geist-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ---------------------------------------------------------------------------
+   Hareket
+   Girişte içeriği alttan yumuşakça getiren tek bir animasyon; sıra farkı
+   inline animation-delay ile veriliyor.
+--------------------------------------------------------------------------- */
+@keyframes sr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sr-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.sr-rise {
+  animation: sr-rise 0.55s cubic-bezier(0.22, 0.68, 0.32, 1) both;
+}
+
+.sr-float {
+  animation: sr-float 5s ease-in-out infinite;
+}
+
+/* Ayarlardaki "hareketleri azalt" ve işletim sistemi tercihi aynı sonucu verir. */
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

@@ -1,0 +1,411 @@
+"use client";
+
+import { useSettings } from "@/components/SettingsProvider";
+import type { Lang } from "@/lib/settings";
+
+/**
+ * Arayüz metinleri. Türkçe varsayılan; Ayarlar > Dil ile İngilizceye geçilir.
+ * Kategori adları (Market, Yemek…) Sheet'e Türkçe yazıldığı için veri olarak
+ * korunur; burada yalnızca ekranda gösterilen karşılıkları tutulur.
+ */
+const tr = {
+  "nav.panel": "Panel",
+  "nav.settings": "Ayarlar",
+  "theme.toLight": "Açık temaya geç",
+  "theme.toDark": "Koyu temaya geç",
+
+  "app.tagline": "Fişlerin ve bütçen tek yerde",
+
+  "greet.morning": "Günaydın",
+  "greet.day": "İyi günler",
+  "greet.evening": "İyi akşamlar",
+  "greet.night": "İyi geceler",
+  "greet.welcome": "Hoş geldin",
+
+  "landing.bullet1.lead": "Fotoğrafını çek,",
+  "landing.bullet1.text": "gerisini bırak.",
+  "landing.bullet2.lead": "Yapay zekâ okusun,",
+  "landing.bullet2.text": "sen sadece kontrol et.",
+  "landing.bullet3.lead": "Google Sheets'te",
+  "landing.bullet3.text": "düzenli biriksin.",
+  "landing.cta": "Başla",
+  "landing.motivation1": "Hazırsan başlayalım.",
+  "landing.motivation2": "Bugün de kontrol sende.",
+  "landing.motivation3": "Paranın izini sürelim.",
+  "landing.motivation4": "Bir fiş, bir adım.",
+
+  "market.button": "Piyasalar",
+  "market.prompt": "Hangi uygulamada takip edelim?",
+  "market.note.investing": "Borsa, döviz, emtia",
+  "market.note.tradingview": "Grafik ve teknik analiz",
+  "market.note.doviz": "Döviz ve altın kurları",
+  "market.note.bigpara": "BIST ve piyasa haberleri",
+  "market.note.bloomberght": "Finans haberleri",
+  "market.note.googlefinance": "Hisse ve endeks takibi",
+  "market.note.yahoo": "Global piyasalar",
+
+  "pulse.thisMonth": "Bu ay",
+  "pulse.receipts": "{count} fiş",
+  "pulse.empty": "henüz fiş yok",
+
+  "flow.merchant": "Mağaza",
+  "flow.date": "Tarih",
+  "flow.total": "Toplam",
+  "flow.category": "Kategori",
+  "flow.written": "Sheet'e yazıldı, görsel Drive'da",
+  "flow.pending": "Onayını bekliyor",
+
+  "panel.title": "Panel",
+  "panel.subtitle": "Fişlerini tara, yapay zekâ okusun, Google Sheets'e aktarsın.",
+  "panel.submit": "Google Sheets'e Gönder ({count})",
+  "panel.submitting": "Gönderiliyor…",
+  "panel.success": "{count} fiş başarıyla Google Sheets'e gönderildi.",
+  "panel.submitFailed": "Gönderim başarısız.",
+  "panel.submitError": "Gönderim sırasında hata oluştu.",
+  "panel.analyzeFailed": "Analiz başarısız.",
+  "panel.genericError": "Hata oluştu.",
+  "panel.analyzeErrors":
+    "{count} fiş analiz edilemedi. Önizlemeden kaldırıp tekrar deneyebilirsin.",
+
+  "upload.title": "Fiş Yükle",
+  "upload.desc":
+    "Bilgisayarından yükle ya da kamerayla çek. Aynı anda birden fazla fiş seçebilirsin.",
+  "upload.drop": "Fiş görsellerini sürükle bırak",
+  "upload.browse": "ya da göz atmak için tıkla",
+  "upload.fromFile": "Fotoğraf Yükle",
+  "upload.camera": "Kamerayla Çek",
+  "upload.loaded": "{count} fiş yüklendi",
+  "upload.waiting": " · {count} analiz bekliyor",
+  "upload.analyze": "Fişleri Analiz Et",
+  "upload.analyzing": "Analiz ediliyor…",
+
+  "results.title": "Sonuçları Kontrol Et",
+  "results.count": "{count} fiş",
+  "results.merchant": "Mağaza",
+  "results.date": "Tarih",
+  "results.time": "Saat",
+  "results.category": "Kategori",
+  "results.amount": "Tutar",
+  "results.currency": "Para Birimi",
+  "results.tax": "Vergi",
+  "results.bank": "Banka",
+  "results.items": "Ürünler",
+  "results.select": "Seç…",
+  "results.itemsPlaceholder": "ürün, ürün",
+  "results.delete": "Fişi sil",
+  "results.grandTotal": "Toplam Tutar",
+
+  "preview.pending": "Bekliyor",
+  "preview.analyzing": "Analiz ediliyor",
+  "preview.ready": "Hazır",
+  "preview.error": "Hata",
+  "preview.remove": "Fişi kaldır",
+
+  "banner.dismiss": "Kapat",
+
+  "summary.monthly": "Aylık Özet",
+  "summary.scanned": "{count} fiş tarandı",
+  "summary.categories": "Kategori Dağılımı",
+  "summary.chartView": "Grafiği göster",
+  "summary.tableView": "Tablo görünümü",
+  "summary.noRecords": "Bu ay için henüz kayıt yok.",
+  "summary.recent": "Son Kayıtlar",
+  "summary.noRecent": "Henüz gönderilmiş fiş yok.",
+  "summary.planning": "Finansal Planlama",
+  "summary.income": "Gelir",
+  "summary.spend": "Harcama",
+  "summary.over": "⚠️ Bu ay gelirini {amount} aştın.",
+  "summary.remaining": "Kalan / tasarruf: {amount}",
+  "summary.budget": "Bütçe: {amount}",
+  "summary.category": "Kategori",
+  "summary.amount": "Tutar",
+  "summary.total": "Toplam",
+  "summary.unknown": "Bilinmeyen",
+
+  "settings.title": "Ayarlar",
+  "settings.subtitle": "Tercihler bu tarayıcıda saklanır; fiş verilerin Google Sheets'te durur.",
+  "settings.profile": "Profil",
+  "settings.profileDesc": "Ana sayfadaki karşılamada kullanılır.",
+  "settings.displayName": "Görünen ad",
+  "settings.displayNameHint": "Boş bırakırsan selamlama isimsiz gösterilir.",
+  "settings.namePlaceholder": "Adın",
+  "settings.language": "Dil",
+  "settings.languageDesc": "Arayüz dili. Fiş verilerin ve kategori adların değişmez.",
+  "settings.appearance": "Görünüm",
+  "settings.appearanceDesc": "Tema ve vurgu rengi anında uygulanır.",
+  "settings.theme": "Tema",
+  "settings.accent": "Vurgu rengi",
+  "settings.themeSystem": "Sistem",
+  "settings.themeSystemHint": "Cihazın tercihini izler",
+  "settings.themeLight": "Açık",
+  "settings.themeLightHint": "Her zaman aydınlık",
+  "settings.themeDark": "Koyu",
+  "settings.themeDarkHint": "Her zaman karanlık",
+  "settings.accentTeal": "Nane",
+  "settings.accentIndigo": "Gece",
+  "settings.accentAmber": "Bal",
+  "settings.accentRose": "Gül",
+  "settings.prefs": "Tercihler",
+  "settings.prefsDesc": "Fiş yükleme akışının varsayılanları.",
+  "settings.currency": "Varsayılan para birimi",
+  "settings.currencyHint": "Yeni fişler bu birimle başlar.",
+  "settings.autoAnalyze": "Yükleyince otomatik analiz et",
+  "settings.autoAnalyzeHint": "Fişi seçer seçmez yapay zekâ okumaya başlasın.",
+  "settings.reduceMotion": "Hareketleri azalt",
+  "settings.reduceMotionHint": "Animasyonları kapatır.",
+  "settings.market": "Piyasa takibi",
+  "settings.marketDesc":
+    "Uygulama piyasa verisi çekmez; ana sayfadaki Piyasalar menüsünden seçtiğin siteye gider. Buradaki seçim listenin başında yıldızlı görünür.",
+  "link.sheet": "Google Sheets",
+  "link.drive": "Google Drive",
+  "settings.sheetUrl": "Google Sheet adresi",
+  "settings.sheetUrlHint": "Doldurursan üst çubukta Sheets kısayolu çıkar.",
+  "settings.driveUrl": "Drive klasörü adresi",
+  "settings.driveUrlHint": "Fiş görsellerinin durduğu klasörün adresi.",
+  "settings.connection": "Google bağlantısı",
+  "settings.connectionDesc": "Fişler Apps Script üzerinden Sheet'e ve Drive'a yazılır.",
+  "settings.testConnection": "Bağlantıyı test et",
+  "settings.testing": "Deneniyor…",
+  "settings.openSheet": "Sheet'i aç ↗",
+  "settings.connectionOk": "Bağlantı çalışıyor — {count} kayıt okundu.",
+  "settings.connectionFail":
+    "Bağlanılamadı. GOOGLE_APPS_SCRIPT_URL değerini ve Apps Script dağıtımını kontrol et.",
+  "settings.data": "Veri",
+  "settings.dataDesc": "Geçmiş kayıtlarının bir kopyasını indir.",
+  "settings.exportCsv": "Geçmişi CSV indir",
+  "settings.exporting": "Hazırlanıyor…",
+  "settings.exportEmpty": "Dışa aktarılacak kayıt bulunamadı.",
+  "settings.exportFailed": "Kayıtlar okunamadı.",
+  "settings.about": "Hakkında",
+  "settings.reset": "Ayarları sıfırla",
+  "settings.resetConfirm": "Tüm ayarlar varsayılana dönecek. Devam edilsin mi?",
+
+  "cat.Market": "Market",
+  "cat.Yemek": "Yemek",
+  "cat.Ulaşım": "Ulaşım",
+  "cat.Alışveriş": "Alışveriş",
+  "cat.Sağlık": "Sağlık",
+  "cat.Eğitim": "Eğitim",
+  "cat.Eğlence": "Eğlence",
+  "cat.Fatura": "Fatura",
+  "cat.Diğer": "Diğer",
+};
+
+const en: Record<keyof typeof tr, string> = {
+  "nav.panel": "Dashboard",
+  "nav.settings": "Settings",
+  "theme.toLight": "Switch to light theme",
+  "theme.toDark": "Switch to dark theme",
+
+  "app.tagline": "Your receipts and budget in one place",
+
+  "greet.morning": "Good morning",
+  "greet.day": "Good afternoon",
+  "greet.evening": "Good evening",
+  "greet.night": "Good night",
+  "greet.welcome": "Welcome",
+
+  "landing.bullet1.lead": "Snap a photo,",
+  "landing.bullet1.text": "leave the rest to us.",
+  "landing.bullet2.lead": "AI reads it,",
+  "landing.bullet2.text": "you just double-check.",
+  "landing.bullet3.lead": "Google Sheets keeps",
+  "landing.bullet3.text": "everything in order.",
+  "landing.cta": "Get started",
+  "landing.motivation1": "Ready when you are.",
+  "landing.motivation2": "Today you're in control.",
+  "landing.motivation3": "Let's follow the money.",
+  "landing.motivation4": "One receipt, one step.",
+
+  "market.button": "Markets",
+  "market.prompt": "Where should we track them?",
+  "market.note.investing": "Stocks, forex, commodities",
+  "market.note.tradingview": "Charts and technical analysis",
+  "market.note.doviz": "Currency and gold rates",
+  "market.note.bigpara": "BIST and market news",
+  "market.note.bloomberght": "Finance news",
+  "market.note.googlefinance": "Stocks and indices",
+  "market.note.yahoo": "Global markets",
+
+  "pulse.thisMonth": "This month",
+  "pulse.receipts": "{count} receipts",
+  "pulse.empty": "no receipts yet",
+
+  "flow.merchant": "Merchant",
+  "flow.date": "Date",
+  "flow.total": "Total",
+  "flow.category": "Category",
+  "flow.written": "Saved to Sheets, image in Drive",
+  "flow.pending": "Waiting for your approval",
+
+  "panel.title": "Dashboard",
+  "panel.subtitle": "Scan your receipts, let AI read them, send them to Google Sheets.",
+  "panel.submit": "Send to Google Sheets ({count})",
+  "panel.submitting": "Sending…",
+  "panel.success": "{count} receipts sent to Google Sheets.",
+  "panel.submitFailed": "Could not send.",
+  "panel.submitError": "Something went wrong while sending.",
+  "panel.analyzeFailed": "Analysis failed.",
+  "panel.genericError": "Something went wrong.",
+  "panel.analyzeErrors":
+    "{count} receipts could not be analysed. Remove them from the preview and try again.",
+
+  "upload.title": "Add receipts",
+  "upload.desc":
+    "Upload from your device or take a photo. You can pick several receipts at once.",
+  "upload.drop": "Drag and drop receipt images",
+  "upload.browse": "or click to browse",
+  "upload.fromFile": "Upload photo",
+  "upload.camera": "Use camera",
+  "upload.loaded": "{count} receipts added",
+  "upload.waiting": " · {count} waiting to be analysed",
+  "upload.analyze": "Analyse receipts",
+  "upload.analyzing": "Analysing…",
+
+  "results.title": "Review the results",
+  "results.count": "{count} receipts",
+  "results.merchant": "Merchant",
+  "results.date": "Date",
+  "results.time": "Time",
+  "results.category": "Category",
+  "results.amount": "Total",
+  "results.currency": "Currency",
+  "results.tax": "Tax",
+  "results.bank": "Bank",
+  "results.items": "Items",
+  "results.select": "Select…",
+  "results.itemsPlaceholder": "item, item",
+  "results.delete": "Delete receipt",
+  "results.grandTotal": "Grand total",
+
+  "preview.pending": "Waiting",
+  "preview.analyzing": "Analysing",
+  "preview.ready": "Ready",
+  "preview.error": "Error",
+  "preview.remove": "Remove receipt",
+
+  "banner.dismiss": "Dismiss",
+
+  "summary.monthly": "Monthly summary",
+  "summary.scanned": "{count} receipts scanned",
+  "summary.categories": "Category breakdown",
+  "summary.chartView": "Show chart",
+  "summary.tableView": "Table view",
+  "summary.noRecords": "No records for this month yet.",
+  "summary.recent": "Recent records",
+  "summary.noRecent": "No receipts sent yet.",
+  "summary.planning": "Financial planning",
+  "summary.income": "Income",
+  "summary.spend": "Spending",
+  "summary.over": "⚠️ You are {amount} over your income this month.",
+  "summary.remaining": "Left / saved: {amount}",
+  "summary.budget": "Budget: {amount}",
+  "summary.category": "Category",
+  "summary.amount": "Amount",
+  "summary.total": "Total",
+  "summary.unknown": "Unknown",
+
+  "settings.title": "Settings",
+  "settings.subtitle":
+    "Preferences live in this browser; your receipt data stays in Google Sheets.",
+  "settings.profile": "Profile",
+  "settings.profileDesc": "Used in the greeting on the home page.",
+  "settings.displayName": "Display name",
+  "settings.displayNameHint": "Leave empty for a greeting without a name.",
+  "settings.namePlaceholder": "Your name",
+  "settings.language": "Language",
+  "settings.languageDesc": "Interface language. Your receipts and category names stay the same.",
+  "settings.appearance": "Appearance",
+  "settings.appearanceDesc": "Theme and accent colour apply instantly.",
+  "settings.theme": "Theme",
+  "settings.accent": "Accent colour",
+  "settings.themeSystem": "System",
+  "settings.themeSystemHint": "Follows your device",
+  "settings.themeLight": "Light",
+  "settings.themeLightHint": "Always light",
+  "settings.themeDark": "Dark",
+  "settings.themeDarkHint": "Always dark",
+  "settings.accentTeal": "Mint",
+  "settings.accentIndigo": "Midnight",
+  "settings.accentAmber": "Honey",
+  "settings.accentRose": "Rose",
+  "settings.prefs": "Preferences",
+  "settings.prefsDesc": "Defaults for the upload flow.",
+  "settings.currency": "Default currency",
+  "settings.currencyHint": "New receipts start with this currency.",
+  "settings.autoAnalyze": "Analyse on upload",
+  "settings.autoAnalyzeHint": "Start reading as soon as a receipt is picked.",
+  "settings.reduceMotion": "Reduce motion",
+  "settings.reduceMotionHint": "Turns animations off.",
+  "settings.market": "Market tracking",
+  "settings.marketDesc":
+    "The app does not fetch market data; the Markets menu on the home page opens the site you pick here. Your choice appears first, with a star.",
+  "link.sheet": "Google Sheets",
+  "link.drive": "Google Drive",
+  "settings.sheetUrl": "Google Sheet link",
+  "settings.sheetUrlHint": "Fill this in to get a Sheets shortcut in the top bar.",
+  "settings.driveUrl": "Drive folder link",
+  "settings.driveUrlHint": "The folder where receipt images are stored.",
+  "settings.connection": "Google connection",
+  "settings.connectionDesc": "Receipts are written to Sheets and Drive through Apps Script.",
+  "settings.testConnection": "Test connection",
+  "settings.testing": "Testing…",
+  "settings.openSheet": "Open the Sheet ↗",
+  "settings.connectionOk": "Connection works — {count} records read.",
+  "settings.connectionFail":
+    "Could not connect. Check GOOGLE_APPS_SCRIPT_URL and your Apps Script deployment.",
+  "settings.data": "Data",
+  "settings.dataDesc": "Download a copy of your history.",
+  "settings.exportCsv": "Export history as CSV",
+  "settings.exporting": "Preparing…",
+  "settings.exportEmpty": "No records to export.",
+  "settings.exportFailed": "Could not read the records.",
+  "settings.about": "About",
+  "settings.reset": "Reset settings",
+  "settings.resetConfirm": "All settings will return to their defaults. Continue?",
+
+  "cat.Market": "Groceries",
+  "cat.Yemek": "Dining",
+  "cat.Ulaşım": "Transport",
+  "cat.Alışveriş": "Shopping",
+  "cat.Sağlık": "Health",
+  "cat.Eğitim": "Education",
+  "cat.Eğlence": "Entertainment",
+  "cat.Fatura": "Bills",
+  "cat.Diğer": "Other",
+};
+
+export type TKey = keyof typeof tr;
+
+const DICT: Record<Lang, Record<TKey, string>> = { tr, en };
+
+export const LANGUAGES: { value: Lang; label: string }[] = [
+  { value: "tr", label: "Türkçe" },
+  { value: "en", label: "English" },
+];
+
+function interpolate(template: string, vars?: Record<string, string | number>) {
+  if (!vars) return template;
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in vars ? String(vars[name]) : match
+  );
+}
+
+export function translate(lang: Lang, key: TKey, vars?: Record<string, string | number>) {
+  return interpolate(DICT[lang]?.[key] ?? DICT.tr[key], vars);
+}
+
+/** Bileşenlerde metin, dil ve yerel biçimlendirme için tek giriş noktası. */
+export function useT() {
+  const { settings } = useSettings();
+  const lang = settings.language;
+
+  return {
+    lang,
+    locale: lang === "en" ? "en-US" : "tr-TR",
+    t: (key: TKey, vars?: Record<string, string | number>) => translate(lang, key, vars),
+    /** Kategori verisi Türkçe saklanır; ekranda seçili dile çevrilir. */
+    category: (value: string) =>
+      value ? translate(lang, `cat.${value}` as TKey) || value : value,
+  };
+}
