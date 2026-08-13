@@ -23,6 +23,12 @@ export type Settings = {
   /** Üst çubuktaki kısayollar. Boşsa ilgili buton görünmez. */
   sheetUrl: string;
   driveUrl: string;
+  /**
+   * Aylık gelir ve bütçe (TRY). Sheet'te MonthlyIncome / MonthlyBudget named
+   * range'i varsa o kazanır; buradakiler yedek olarak kullanılır. 0 = tanımsız.
+   */
+  monthlyIncome: number;
+  monthlyBudget: number;
 };
 
 export const SETTINGS_KEY = "sr-settings";
@@ -38,6 +44,8 @@ export const DEFAULT_SETTINGS: Settings = {
   marketUrl: "https://tr.investing.com/",
   sheetUrl: process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL ?? "",
   driveUrl: process.env.NEXT_PUBLIC_GOOGLE_DRIVE_URL ?? "",
+  monthlyIncome: 0,
+  monthlyBudget: 0,
 };
 
 /** "Piyasalar" menüsünde listelenen dış siteler. Uygulama veri çekmez, sadece yönlendirir. */
@@ -75,6 +83,11 @@ export const CURRENCIES: { value: Currency; label: string }[] = [
   { value: "EUR", label: "€ EUR" },
 ];
 
+function toPositiveNumber(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 function isOneOf<T extends string>(value: unknown, allowed: readonly T[]): value is T {
   return typeof value === "string" && (allowed as readonly string[]).includes(value);
 }
@@ -102,6 +115,8 @@ export function normalizeSettings(raw: unknown): Settings {
       typeof data.sheetUrl === "string" ? data.sheetUrl.slice(0, 300) : DEFAULT_SETTINGS.sheetUrl,
     driveUrl:
       typeof data.driveUrl === "string" ? data.driveUrl.slice(0, 300) : DEFAULT_SETTINGS.driveUrl,
+    monthlyIncome: toPositiveNumber(data.monthlyIncome),
+    monthlyBudget: toPositiveNumber(data.monthlyBudget),
   };
 }
 

@@ -10,7 +10,25 @@ import type { Lang } from "@/lib/settings";
  */
 const tr = {
   "nav.panel": "Panel",
+  "nav.plan": "Plan",
   "nav.settings": "Ayarlar",
+  "plan.title": "Finansal Planlama",
+  "plan.subtitle": "Bu ayki gelirin, harcaman ve kalanın tek ekranda.",
+  "plan.income": "Aylık gelir",
+  "plan.budget": "Aylık bütçe",
+  "plan.budgetOptional": "isteğe bağlı",
+  "plan.spend": "Bu ayki harcama",
+  "plan.remaining": "Kalan",
+  "plan.overspent": "Aşım",
+  "plan.ofIncome": "gelirinin %{percent}'i harcandı",
+  "plan.budgetUsed": "bütçenin %{percent}'i kullanıldı",
+  "plan.overBudget": "Bütçeni {amount} aştın.",
+  "plan.onTrack": "Bütçenin içindesin, böyle devam.",
+  "plan.noIncome": "Aylık gelirini yaz, kalanını ve bütçe durumunu hesaplayayım.",
+  "plan.noData": "Bu ay henüz fiş yok, harcama grafiği fiş ekledikçe dolacak.",
+  "plan.trend": "Son 6 ay",
+  "plan.categories": "Bu ay nereye gitti",
+  "plan.savingRate": "Tasarruf oranı",
   "theme.toLight": "Açık temaya geç",
   "theme.toDark": "Koyu temaya geç",
 
@@ -153,6 +171,13 @@ const tr = {
   "settings.autoAnalyzeHint": "Fişi seçer seçmez yapay zekâ okumaya başlasın.",
   "settings.reduceMotion": "Hareketleri azalt",
   "settings.reduceMotionHint": "Animasyonları kapatır.",
+  "settings.finance": "Aylık plan",
+  "settings.financeDesc":
+    "Gelirini yazınca panelde Finansal Planlama kartı açılır. Sheet'inde MonthlyIncome adlı bir aralık varsa o öncelikli olur.",
+  "settings.income": "Aylık gelir (₺)",
+  "settings.incomeHint": "Boş ya da 0 bırakırsan kart gizli kalır.",
+  "settings.budget": "Aylık bütçe (₺)",
+  "settings.budgetHint": "İsteğe bağlı harcama hedefin.",
   "settings.market": "Piyasa takibi",
   "settings.marketDesc":
     "Uygulama piyasa verisi çekmez; ana sayfadaki Piyasalar menüsünden seçtiğin siteye gider. Buradaki seçim listenin başında yıldızlı görünür.",
@@ -176,6 +201,18 @@ const tr = {
   "settings.exporting": "Hazırlanıyor…",
   "settings.exportEmpty": "Dışa aktarılacak kayıt bulunamadı.",
   "settings.exportFailed": "Kayıtlar okunamadı.",
+  "settings.privacy": "Gizlilik",
+  "settings.privacyDesc": "Fişlerin ve ayarların tam olarak nereye gidiyor.",
+  "privacy.1":
+    "Fiş fotoğrafın, yalnızca okunmak üzere sunucu üzerinden fal.ai'ye (Claude Sonnet 5) gönderilir. Uygulama görselin kopyasını saklamaz.",
+  "privacy.2":
+    "Onayladığın fişler senin Google Sheet'ine ve Drive klasörüne yazılır. Veriler kendi Google hesabında kalır; araya başka bir sunucu girmez.",
+  "privacy.3":
+    "Uygulamanın veritabanı yok. Adın, temanı, gelir/bütçe bilgin gibi ayarlar yalnızca bu tarayıcıda (localStorage) durur ve hiçbir yere gönderilmez.",
+  "privacy.4":
+    "fal.ai anahtarın sunucu tarafında kalır, tarayıcıya hiç indirilmez; sayfanın kaynağında görünmez.",
+  "privacy.warning":
+    "Dikkat: uygulamada giriş/şifre yok. Vercel gibi herkese açık bir adrese yayınlarsan, adresi bilen herkes fişlerini görebilir. Yayınlarsan Vercel'in \"Deployment Protection\" ayarını açman iyi olur.",
   "settings.about": "Hakkında",
   "settings.reset": "Ayarları sıfırla",
   "settings.resetConfirm": "Tüm ayarlar varsayılana dönecek. Devam edilsin mi?",
@@ -193,7 +230,25 @@ const tr = {
 
 const en: Record<keyof typeof tr, string> = {
   "nav.panel": "Dashboard",
+  "nav.plan": "Plan",
   "nav.settings": "Settings",
+  "plan.title": "Financial planning",
+  "plan.subtitle": "This month's income, spending and what is left — on one screen.",
+  "plan.income": "Monthly income",
+  "plan.budget": "Monthly budget",
+  "plan.budgetOptional": "optional",
+  "plan.spend": "Spent this month",
+  "plan.remaining": "Left",
+  "plan.overspent": "Over",
+  "plan.ofIncome": "{percent}% of your income spent",
+  "plan.budgetUsed": "{percent}% of your budget used",
+  "plan.overBudget": "You are {amount} over budget.",
+  "plan.onTrack": "You are within budget — keep it up.",
+  "plan.noIncome": "Enter your monthly income and I will work out what is left.",
+  "plan.noData": "No receipts this month yet; the chart fills up as you add them.",
+  "plan.trend": "Last 6 months",
+  "plan.categories": "Where it went this month",
+  "plan.savingRate": "Saving rate",
   "theme.toLight": "Switch to light theme",
   "theme.toDark": "Switch to dark theme",
 
@@ -337,6 +392,13 @@ const en: Record<keyof typeof tr, string> = {
   "settings.autoAnalyzeHint": "Start reading as soon as a receipt is picked.",
   "settings.reduceMotion": "Reduce motion",
   "settings.reduceMotionHint": "Turns animations off.",
+  "settings.finance": "Monthly plan",
+  "settings.financeDesc":
+    "Enter your income to unlock the Financial planning card on the dashboard. A MonthlyIncome named range in your Sheet takes priority.",
+  "settings.income": "Monthly income (₺)",
+  "settings.incomeHint": "Leave empty or 0 to keep the card hidden.",
+  "settings.budget": "Monthly budget (₺)",
+  "settings.budgetHint": "Optional spending target.",
   "settings.market": "Market tracking",
   "settings.marketDesc":
     "The app does not fetch market data; the Markets menu on the home page opens the site you pick here. Your choice appears first, with a star.",
@@ -360,6 +422,18 @@ const en: Record<keyof typeof tr, string> = {
   "settings.exporting": "Preparing…",
   "settings.exportEmpty": "No records to export.",
   "settings.exportFailed": "Could not read the records.",
+  "settings.privacy": "Privacy",
+  "settings.privacyDesc": "Exactly where your receipts and settings go.",
+  "privacy.1":
+    "Your receipt photo is sent through the server to fal.ai (Claude Sonnet 5) purely to be read. The app keeps no copy of the image.",
+  "privacy.2":
+    "Approved receipts are written to your own Google Sheet and Drive folder. The data stays in your Google account; no other server sits in between.",
+  "privacy.3":
+    "The app has no database. Your name, theme and income/budget settings live only in this browser (localStorage) and are never sent anywhere.",
+  "privacy.4":
+    "Your fal.ai key stays on the server; it is never downloaded to the browser and never appears in the page source.",
+  "privacy.warning":
+    "Heads up: there is no sign-in. If you deploy this to a public address such as Vercel, anyone with the link can see your receipts. Turn on Vercel's \"Deployment Protection\" if you publish it.",
   "settings.about": "About",
   "settings.reset": "Reset settings",
   "settings.resetConfirm": "All settings will return to their defaults. Continue?",

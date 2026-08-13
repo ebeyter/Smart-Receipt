@@ -1,5 +1,6 @@
 "use client";
 
+import { ShieldCheck, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { useSettings } from "@/components/SettingsProvider";
 import { Button } from "@/components/ui/button";
@@ -156,6 +157,8 @@ export default function SettingsPage() {
       <ConnectionSection />
 
       <DataSection />
+
+      <PrivacySection />
 
       <Section title={t("settings.about")}>
         <div className="flex flex-col gap-1 text-sm text-muted">
@@ -318,6 +321,30 @@ function DataSection() {
         {isExporting ? t("settings.exporting") : t("settings.exportCsv")}
       </Button>
       {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+    </Section>
+  );
+}
+
+/** Verinin hangi sistemlere gittiğini açıkça anlatır. */
+function PrivacySection() {
+  const { t } = useT();
+  const points = ["privacy.1", "privacy.2", "privacy.3", "privacy.4"] as const;
+
+  return (
+    <Section title={t("settings.privacy")} description={t("settings.privacyDesc")}>
+      <ul className="flex flex-col gap-2.5">
+        {points.map((point) => (
+          <li key={point} className="flex gap-2.5 text-sm leading-relaxed text-muted">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+            <span>{t(point)}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-1 flex gap-2.5 rounded-xl border border-border bg-surface-muted p-3 text-sm leading-relaxed text-foreground">
+        <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+        <span>{t("privacy.warning")}</span>
+      </p>
     </Section>
   );
 }

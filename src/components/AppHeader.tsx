@@ -7,11 +7,13 @@ import AppMark from "@/components/AppMark";
 import ThemeQuickToggle from "@/components/ThemeQuickToggle";
 import { APP_NAME } from "@/lib/brand";
 import { useSettings } from "@/components/SettingsProvider";
+import { FlowButton } from "@/components/ui/flow-button";
 import { useT } from "@/lib/i18n";
 import { isSafeExternalUrl } from "@/lib/settings";
 
 const NAV = [
   { href: "/panel", labelKey: "nav.panel" },
+  { href: "/plan", labelKey: "nav.plan" },
   { href: "/ayarlar", labelKey: "nav.settings" },
 ] as const;
 
@@ -32,14 +34,22 @@ export default function AppHeader() {
 
         <div className="ml-auto flex items-center gap-1.5">
           {isSafeExternalUrl(settings.sheetUrl) && (
-            <ExternalShortcut href={settings.sheetUrl} label={t("link.sheet")}>
-              <Table2 className="h-4 w-4 text-cat-6" />
-            </ExternalShortcut>
+            <FlowButton
+              external
+              size="sm"
+              href={settings.sheetUrl}
+              text={t("link.sheet")}
+              icon={<Table2 className="h-4 w-4 text-cat-6 group-hover:text-background" />}
+            />
           )}
           {isSafeExternalUrl(settings.driveUrl) && (
-            <ExternalShortcut href={settings.driveUrl} label={t("link.drive")}>
-              <FolderOpen className="h-4 w-4 text-cat-4" />
-            </ExternalShortcut>
+            <FlowButton
+              external
+              size="sm"
+              href={settings.driveUrl}
+              text={t("link.drive")}
+              icon={<FolderOpen className="h-4 w-4 text-cat-4 group-hover:text-background" />}
+            />
           )}
         </div>
 
@@ -65,29 +75,5 @@ export default function AppHeader() {
         </nav>
       </div>
     </header>
-  );
-}
-
-/** Google Sheets / Drive gibi dış hedeflere açılan küçük kısayol butonu. */
-function ExternalShortcut({
-  href,
-  label,
-  children,
-}: {
-  href: string;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      title={label}
-      className="flex items-center gap-1.5 rounded-lg border border-border bg-surface/70 px-2.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-muted"
-    >
-      {children}
-      <span className="hidden sm:inline">{label}</span>
-    </a>
   );
 }

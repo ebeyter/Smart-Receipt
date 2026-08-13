@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CATEGORY_META } from "@/lib/categories";
 import { formatDate, formatMoney } from "@/lib/format";
+import { useSettings } from "@/components/SettingsProvider";
 import { useT } from "@/lib/i18n";
 import type { SavedReceipt } from "@/lib/types";
 
@@ -25,6 +26,12 @@ export default function SummaryPanel({
   monthlyIncome,
 }: Props) {
   const { t, locale, category: categoryLabel } = useT();
+  const { settings } = useSettings();
+
+  // Sheet'teki named range öncelikli; boş ya da 0 ise Ayarlar'daki değere düşer.
+  const positive = (value: number | null | undefined) => (value && value > 0 ? value : null);
+  const income = positive(monthlyIncome) ?? positive(settings.monthlyIncome);
+  const budget = positive(monthlyBudget) ?? positive(settings.monthlyBudget);
   const [hovered, setHovered] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
 
@@ -84,12 +91,12 @@ export default function SummaryPanel({
         </p>
       </section>
 
-      {monthlyIncome != null && monthlyIncome > 0 && (
+      {income != null && income > 0 && (
         <FinancialPlanningCard
           monthLabel={monthLabel}
-          income={monthlyIncome}
+          income={income}
           spend={monthTotal}
-          budget={monthlyBudget ?? null}
+          budget={budget}
         />
       )}
 
