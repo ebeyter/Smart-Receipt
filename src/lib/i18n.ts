@@ -29,6 +29,7 @@ const tr = {
   "plan.trend": "Son 6 ay",
   "plan.categories": "Bu ay nereye gitti",
   "plan.savingRate": "Tasarruf oranı",
+  "plan.fromSheet": "Sheet'ten geliyor: {amount}. Buraya yazarsan bu değer geçerli olur.",
   "theme.toLight": "Açık temaya geç",
   "theme.toDark": "Koyu temaya geç",
 
@@ -65,6 +66,7 @@ const tr = {
   "pulse.thisMonth": "Bu ay",
   "pulse.receipts": "{count} fiş",
   "pulse.empty": "henüz fiş yok",
+  "pulse.loading": "yükleniyor…",
 
   "flow.merchant": "Mağaza",
   "flow.date": "Tarih",
@@ -243,6 +245,7 @@ const en: Record<keyof typeof tr, string> = {
   "plan.trend": "Last 6 months",
   "plan.categories": "Where it went this month",
   "plan.savingRate": "Saving rate",
+  "plan.fromSheet": "From your Sheet: {amount}. Type here to override it.",
   "theme.toLight": "Switch to light theme",
   "theme.toDark": "Switch to dark theme",
 
@@ -279,6 +282,7 @@ const en: Record<keyof typeof tr, string> = {
   "pulse.thisMonth": "This month",
   "pulse.receipts": "{count} receipts",
   "pulse.empty": "no receipts yet",
+  "pulse.loading": "loading…",
 
   "flow.merchant": "Merchant",
   "flow.date": "Date",

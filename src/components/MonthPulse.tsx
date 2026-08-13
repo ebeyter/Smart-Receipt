@@ -25,8 +25,11 @@ export default function MonthPulse({ receipts, reduceMotion }: Props) {
   const { t, locale, category } = useT();
   const animate = !reduceMotion && !systemReduce;
 
+  // receipts null iken geçmiş henüz okunmadı; halka boş sonuç göstermek yerine
+  // bekler, veri gelince giriş animasyonu ve sayaç birlikte çalışır.
+  const isLoading = receipts === null;
   const summary = useMemo(() => summarize(receipts), [receipts]);
-  const animatedTotal = useCountUp(summary.total, animate);
+  const animatedTotal = useCountUp(summary.total, animate && !isLoading);
   const shownTotal = animate ? animatedTotal : summary.total;
 
   const dots = useMemo(
@@ -51,7 +54,12 @@ export default function MonthPulse({ receipts, reduceMotion }: Props) {
       />
 
       <div className="relative aspect-square w-full">
-        <svg viewBox="0 0 448 448" className="h-full w-full">
+        {/* key değişince noktalar giriş animasyonunu baştan oynar. */}
+        <svg
+          key={isLoading ? "loading" : "loaded"}
+          viewBox="0 0 448 448"
+          className="h-full w-full"
+        >
           {dots.map((dot, index) => (
             <motion.circle
               key={index}
@@ -60,7 +68,7 @@ export default function MonthPulse({ receipts, reduceMotion }: Props) {
               r={9}
               fill={dot.color}
               initial={animate ? { opacity: 0, scale: 0 } : false}
-              animate={{ opacity: dot.active ? 0.95 : 0.18, scale: 1 }}
+              animate={{ opacity: dot.active ? 0.95 : isLoading ? 0.1 : 0.18, scale: 1 }}
               transition={{ delay: animate ? 0.15 + index * 0.012 : 0, duration: 0.4 }}
               style={{ transformOrigin: `${dot.x}px ${dot.y}px` }}
             />
@@ -74,12 +82,14 @@ export default function MonthPulse({ receipts, reduceMotion }: Props) {
               {t("pulse.thisMonth")}
             </span>
             <span className="money mt-2 w-full truncate text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              {formatMoney(shownTotal, summary.currency, locale)}
+              {isLoading ? "—" : formatMoney(shownTotal, summary.currency, locale)}
             </span>
             <span className="mt-2 text-sm text-muted">
-              {summary.count > 0
-                ? t("pulse.receipts", { count: summary.count })
-                : t("pulse.empty")}
+              {isLoading
+                ? t("pulse.loading")
+                : summary.count > 0
+                  ? t("pulse.receipts", { count: summary.count })
+                  : t("pulse.empty")}
             </span>
           </div>
         </div>

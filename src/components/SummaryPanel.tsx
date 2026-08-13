@@ -29,10 +29,10 @@ export default function SummaryPanel({
   const { t, locale, category: categoryLabel } = useT();
   const { settings } = useSettings();
 
-  // Sheet'teki named range öncelikli; boş ya da 0 ise Ayarlar'daki değere düşer.
+  // Planlama sayfasında girilen değer önceliklidir; boşsa Sheet'ten gelen kullanılır.
   const positive = (value: number | null | undefined) => (value && value > 0 ? value : null);
-  const income = positive(monthlyIncome) ?? positive(settings.monthlyIncome);
-  const budget = positive(monthlyBudget) ?? positive(settings.monthlyBudget);
+  const income = positive(settings.monthlyIncome) ?? positive(monthlyIncome);
+  const budget = positive(settings.monthlyBudget) ?? positive(monthlyBudget);
   const [hovered, setHovered] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
 

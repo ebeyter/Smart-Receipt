@@ -67,6 +67,14 @@ mekanizmayı kullanır.
    `GOOGLE_APPS_SCRIPT_URL` değerine yapıştır.
 8. Uygulamadan gerçek bir fiş göndererek uçtan uca test et.
 
+### Örnek (demo) veri
+
+Sunum ya da ekran görüntüsü için Apps Script'te **`seedDemoReceipts`** fonksiyonunu
+çalıştır: geçmiş beş aya yayılmış 22 örnek fiş ekler, böylece Planlama
+sayfasındaki "Son 6 ay" grafiği ve kategori dağılımı dolu görünür.
+Geri almak için **`removeDemoReceipts`** — yalnızca eklediği satırları siler,
+gerçek fişlerine dokunmaz.
+
 ### Sheet üzerindeki özet ve pasta grafik
 
 Apps Script editöründe fonksiyon listesinden **`buildDashboard`**'u seçip ▶ Run'a

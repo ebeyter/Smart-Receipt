@@ -20,6 +20,10 @@
  *    09:00 civarı weeklyEmailSummary'yi otomatik çalıştıracak bir tetikleyici kurar).
  * 8. Haftayı beklemeden test etmek için testWeeklyEmailSummary() fonksiyonunu çalıştır.
  *
+ * Örnek veri (sunum için):
+ *  - seedDemoReceipts() geçmiş beş aya yayılmış 22 örnek fiş ekler.
+ *  - removeDemoReceipts() aynı satırları geri siler.
+ *
  * Özet sayfası (aylık toplam + pasta grafik):
  * 9. Fonksiyon menüsünden buildDashboard() seç ve Run'a bas. "Dashboard" sayfasını
  *    oluşturur: bu ayın toplamı, kategori tablosu ve ona bağlı pasta grafik.
@@ -515,6 +519,102 @@ function installWeeklyTrigger() {
  * test görseli Drive'a kaydeder ve Receipts sayfasına bir satır ekler.
  * Editörde bu fonksiyonu seçip ▶ Run'a bas, sonucu View > Logs'tan izle.
  */
+/* ---------------------------------------------------------------------------
+   Örnek (demo) veri
+   Sunum/ekran görüntüsü için geçmiş aylara yayılmış fişler ekler. Gerçek
+   fişlerine dokunmaz; eklediklerini geri almak için removeDemoReceipts().
+--------------------------------------------------------------------------- */
+
+// Demo satirlari bu isimlerle yazilir; temizleme bunlara bakarak calisir.
+const DEMO_ROWS = [
+  { monthsAgo: 5, day: 4, merchant: "Migros", category: "Market", total: 742.4, tax: 67.49, bank: "Garanti BBVA", items: "Süt, Ekmek, Yumurta, Deterjan" },
+  { monthsAgo: 5, day: 11, merchant: "Shell", category: "Ulaşım", total: 1850.0, tax: 308.33, bank: "Yapı Kredi", items: "V-Power Yakıt" },
+  { monthsAgo: 5, day: 19, merchant: "Kahve Dünyası", category: "Yemek", total: 264.5, tax: 24.05, bank: "Garanti BBVA", items: "Latte, Sandviç" },
+  { monthsAgo: 5, day: 26, merchant: "Türk Telekom", category: "Fatura", total: 649.9, tax: 108.32, bank: "İş Bankası", items: "İnternet faturası" },
+
+  { monthsAgo: 4, day: 3, merchant: "CarrefourSA", category: "Market", total: 968.75, tax: 88.07, bank: "Garanti BBVA", items: "Haftalık alışveriş" },
+  { monthsAgo: 4, day: 9, merchant: "İBB İSPARK", category: "Ulaşım", total: 180.0, tax: 30.0, bank: "Yapı Kredi", items: "Otopark" },
+  { monthsAgo: 4, day: 15, merchant: "Watsons", category: "Sağlık", total: 432.6, tax: 39.33, bank: "İş Bankası", items: "Vitamin, Şampuan" },
+  { monthsAgo: 4, day: 22, merchant: "Cinemaximum", category: "Eğlence", total: 320.0, tax: 29.09, bank: "Garanti BBVA", items: "2 sinema bileti" },
+  { monthsAgo: 4, day: 28, merchant: "Enerjisa", category: "Fatura", total: 1124.3, tax: 187.38, bank: "İş Bankası", items: "Elektrik faturası" },
+
+  { monthsAgo: 3, day: 2, merchant: "Migros", category: "Market", total: 1145.2, tax: 104.11, bank: "Garanti BBVA", items: "Aylık market" },
+  { monthsAgo: 3, day: 8, merchant: "Starbucks", category: "Yemek", total: 198.0, tax: 18.0, bank: "Yapı Kredi", items: "Filtre kahve, Cheesecake" },
+  { monthsAgo: 3, day: 14, merchant: "Decathlon", category: "Alışveriş", total: 2340.0, tax: 390.0, bank: "Garanti BBVA", items: "Koşu ayakkabısı" },
+  { monthsAgo: 3, day: 21, merchant: "Shell", category: "Ulaşım", total: 1720.5, tax: 286.75, bank: "Yapı Kredi", items: "Yakıt" },
+
+  { monthsAgo: 2, day: 5, merchant: "Şok Market", category: "Market", total: 486.9, tax: 44.26, bank: "İş Bankası", items: "Temel gıda" },
+  { monthsAgo: 2, day: 12, merchant: "Udemy", category: "Eğitim", total: 899.0, tax: 149.83, bank: "Garanti BBVA", items: "Online kurs" },
+  { monthsAgo: 2, day: 17, merchant: "Big Chefs", category: "Yemek", total: 1240.0, tax: 112.73, bank: "Garanti BBVA", items: "Akşam yemeği" },
+  { monthsAgo: 2, day: 24, merchant: "İGDAŞ", category: "Fatura", total: 780.4, tax: 130.07, bank: "İş Bankası", items: "Doğalgaz faturası" },
+
+  { monthsAgo: 1, day: 6, merchant: "Migros", category: "Market", total: 1032.6, tax: 93.87, bank: "Garanti BBVA", items: "Market alışverişi" },
+  { monthsAgo: 1, day: 13, merchant: "Eczane Rüya", category: "Sağlık", total: 356.75, tax: 32.43, bank: "Yapı Kredi", items: "Reçeteli ilaç" },
+  { monthsAgo: 1, day: 18, merchant: "Zara", category: "Alışveriş", total: 1899.0, tax: 316.5, bank: "Garanti BBVA", items: "Mont" },
+  { monthsAgo: 1, day: 23, merchant: "Marti TAG", category: "Ulaşım", total: 145.0, tax: 24.17, bank: "Yapı Kredi", items: "Scooter" },
+  { monthsAgo: 1, day: 29, merchant: "Spotify", category: "Eğlence", total: 89.99, tax: 15.0, bank: "İş Bankası", items: "Aylık abonelik" },
+];
+
+/** Geçmiş beş aya yayılmış örnek fişleri Sheet'e ekler ve özeti tazeler. */
+function seedDemoReceipts() {
+  const sheet = getSheet_();
+  const now = new Date();
+  const tz = Session.getScriptTimeZone();
+  let added = 0;
+
+  DEMO_ROWS.forEach(function (demo) {
+    const date = new Date(now.getFullYear(), now.getMonth() - demo.monthsAgo, demo.day, 13, 30);
+    sheet.appendRow([
+      demo.merchant,
+      Utilities.formatDate(date, tz, "yyyy-MM-dd"),
+      Utilities.formatDate(date, tz, "HH:mm"),
+      demo.category,
+      demo.total,
+      "TRY",
+      demo.tax,
+      demo.bank,
+      demo.items,
+      "",
+      date.toISOString(),
+    ]);
+    added++;
+  });
+
+  buildDashboard();
+  Logger.log("Eklenen örnek fiş: " + added);
+  return added;
+}
+
+/** seedDemoReceipts ile eklenen satırları siler; gerçek fişlere dokunmaz. */
+function removeDemoReceipts() {
+  const sheet = getSheet_();
+  const values = sheet.getDataRange().getValues();
+  const tz = Session.getScriptTimeZone();
+  const now = new Date();
+
+  // Demo satirlari: ayni magaza + ayni tarih + ayni tutar ucluleri.
+  const signatures = {};
+  DEMO_ROWS.forEach(function (demo) {
+    const date = new Date(now.getFullYear(), now.getMonth() - demo.monthsAgo, demo.day, 13, 30);
+    signatures[demo.merchant + "|" + Utilities.formatDate(date, tz, "yyyy-MM-dd") + "|" + demo.total] = true;
+  });
+
+  let removed = 0;
+  for (let row = values.length; row >= 2; row--) {
+    const value = values[row - 1];
+    const dateStr = value[1] instanceof Date ? formatDate_(value[1]) : String(value[1] || "");
+    const key = value[0] + "|" + dateStr + "|" + Number(value[4]);
+    if (signatures[key]) {
+      sheet.deleteRow(row);
+      removed++;
+    }
+  }
+
+  buildDashboard();
+  Logger.log("Silinen örnek fiş: " + removed);
+  return removed;
+}
+
 function testReceipt() {
   // 1x1 şeffaf PNG — gerçek fiş görseli olmadan Drive kaydını test etmek için.
   const testImageDataUrl =

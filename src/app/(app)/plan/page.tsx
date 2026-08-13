@@ -20,9 +20,11 @@ export default function PlanPage() {
   const history = useHistory();
 
   const positive = (value: number | null | undefined) => (value && value > 0 ? value : null);
-  // Sheet'teki named range öncelikli; yoksa burada girilen değer kullanılır.
-  const income = positive(history?.monthlyIncome) ?? positive(settings.monthlyIncome);
-  const budget = positive(history?.monthlyBudget) ?? positive(settings.monthlyBudget);
+  // Burada girilen değer önceliklidir; boşsa Sheet'teki named range kullanılır.
+  const sheetIncome = positive(history?.monthlyIncome);
+  const sheetBudget = positive(history?.monthlyBudget);
+  const income = positive(settings.monthlyIncome) ?? sheetIncome;
+  const budget = positive(settings.monthlyBudget) ?? sheetBudget;
 
   const receipts = useMemo(() => history?.receipts ?? [], [history]);
   const monthKey = currentMonthKey();
@@ -54,13 +56,21 @@ export default function PlanPage() {
           label={t("plan.income")}
           value={settings.monthlyIncome}
           onChange={(value) => update({ monthlyIncome: value })}
-          disabled={history?.monthlyIncome != null && history.monthlyIncome > 0}
+          hint={
+            sheetIncome != null && !positive(settings.monthlyIncome)
+              ? t("plan.fromSheet", { amount: formatMoney(sheetIncome, "TRY", locale) })
+              : undefined
+          }
         />
         <AmountField
           label={`${t("plan.budget")} (${t("plan.budgetOptional")})`}
           value={settings.monthlyBudget}
           onChange={(value) => update({ monthlyBudget: value })}
-          disabled={history?.monthlyBudget != null && history.monthlyBudget > 0}
+          hint={
+            sheetBudget != null && !positive(settings.monthlyBudget)
+              ? t("plan.fromSheet", { amount: formatMoney(sheetBudget, "TRY", locale) })
+              : undefined
+          }
         />
       </section>
 
@@ -212,12 +222,12 @@ function AmountField({
   label,
   value,
   onChange,
-  disabled,
+  hint,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
-  disabled?: boolean;
+  hint?: string;
 }) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -228,13 +238,13 @@ function AmountField({
           type="number"
           min={0}
           step={100}
-          disabled={disabled}
           value={value || ""}
           onChange={(e) => onChange(Number(e.target.value) || 0)}
           placeholder="0"
-          className="money w-full bg-transparent text-lg font-semibold text-foreground outline-none disabled:opacity-60"
+          className="money w-full bg-transparent text-lg font-semibold text-foreground outline-none"
         />
       </div>
+      {hint && <span className="text-xs text-muted">{hint}</span>}
     </label>
   );
 }
