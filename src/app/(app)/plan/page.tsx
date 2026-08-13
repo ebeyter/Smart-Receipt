@@ -149,6 +149,7 @@ export default function PlanPage() {
       <section className="sr-rise relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
         <CardStripe tint="var(--cat-7)" />
         <h2 className="font-display text-base font-semibold text-foreground">{t("plan.trend")}</h2>
+        <p className="mt-0.5 text-sm text-muted">{t("plan.trendDesc")}</p>
 
         {/* Tek serili sütun grafiği: tek renk, tabana oturan 4px yuvarlak uçlar,
             etiket yalnızca zirve ve içinde bulunulan ayda, gerisi hover'da. */}
