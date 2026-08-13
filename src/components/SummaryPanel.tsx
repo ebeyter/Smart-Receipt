@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CATEGORY_META } from "@/lib/categories";
 import { formatDate, formatMoney } from "@/lib/format";
 import { useSettings } from "@/components/SettingsProvider";
+import { CardStripe } from "@/components/ui/card-stripe";
 import { useT } from "@/lib/i18n";
 import type { SavedReceipt } from "@/lib/types";
 
@@ -78,7 +79,8 @@ export default function SummaryPanel({
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--primary)" />
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-foreground">{t("summary.monthly")}</h2>
           <span className="text-sm capitalize text-muted">{monthLabel}</span>
@@ -100,7 +102,8 @@ export default function SummaryPanel({
         />
       )}
 
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-3)" />
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-foreground">{t("summary.categories")}</h2>
           {breakdown.length > 0 && (
@@ -240,7 +243,8 @@ export default function SummaryPanel({
         )}
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-7)" />
         <h2 className="text-base font-semibold text-foreground">{t("summary.recent")}</h2>
         {recent.length === 0 ? (
           <p className="mt-3 text-sm text-muted">{t("summary.noRecent")}</p>
@@ -286,7 +290,8 @@ function FinancialPlanningCard({
   const barWidth = Math.min((spend / income) * 100, 100);
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-4)" />
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-foreground">{t("summary.planning")}</h2>
         <span className="text-sm capitalize text-muted">{monthLabel}</span>

@@ -12,37 +12,41 @@
 :root {
   color-scheme: light dark;
 
-  /* Warm Sand & Teal */
-  --background: light-dark(#faf8f3, #1a1815);
-  --surface: light-dark(#ffffff, #221f1b);
-  --surface-muted: light-dark(#f3efe6, #2a2621);
-  --foreground: light-dark(#1f2937, #f0ece2);
-  --muted: light-dark(#6b7280, #a39c8e);
-  --border: light-dark(#e8e1d3, #3a352d);
+  /* Açık tema: Warm Sand & Teal.
+     Koyu tema: kahverengiye çalan eski zemin donuk duruyordu; yerine daha
+     serin, derin bir mürekkep tonu ve yüzeyler arasında daha net kademe var. */
+  --background: light-dark(#faf8f3, #101318);
+  --surface: light-dark(#ffffff, #181c23);
+  --surface-muted: light-dark(#f3efe6, #212630);
+  --foreground: light-dark(#1f2937, #e9ecf2);
+  --muted: light-dark(#6b7280, #99a1b0);
+  --border: light-dark(#e8e1d3, #2c323d);
 
-  --primary: light-dark(#0f6e63, #3fb8a8);
-  --primary-hover: light-dark(#0b5850, #58c9ba);
-  --primary-soft: light-dark(#e3f0ee, #1e3a35);
-  --on-primary: light-dark(#ffffff, #10201d);
+  --primary: light-dark(#0f6e63, #3fd0b8);
+  --primary-hover: light-dark(#0b5850, #5ee0ca);
+  --primary-soft: light-dark(#e3f0ee, #14332f);
+  --on-primary: light-dark(#ffffff, #06201c);
 
-  --accent: light-dark(#f2994a, #f5a862);
-  --accent-soft: light-dark(#fdf0e2, #3a2c1c);
+  --accent: light-dark(#f2994a, #ffab5e);
+  --accent-soft: light-dark(#fdf0e2, #3a2a17);
 
-  --success: light-dark(#2f9e6e, #4cbb87);
-  --success-soft: light-dark(#e5f5ed, #1c3327);
-  --danger: light-dark(#d64545, #e57373);
-  --danger-soft: light-dark(#fbe9e9, #3a2224);
+  --success: light-dark(#2f9e6e, #4ede9d);
+  --success-soft: light-dark(#e5f5ed, #12321f);
+  --danger: light-dark(#d64545, #ff7a7a);
+  --danger-soft: light-dark(#fbe9e9, #3a1f22);
 
   /* Category palette for charts/badges — validated categorical theme
-     (see dataviz skill: fixed hue order, CVD-safe adjacent pairs) */
-  --cat-1: light-dark(#2a78d6, #3987e5); /* blue */
-  --cat-2: light-dark(#eb6834, #d95926); /* orange */
-  --cat-3: light-dark(#1baf7a, #199e70); /* aqua */
-  --cat-4: light-dark(#eda100, #c98500); /* yellow */
-  --cat-5: light-dark(#e87ba4, #d55181); /* magenta */
-  --cat-6: light-dark(#008300, #008300); /* green */
-  --cat-7: light-dark(#4a3aa7, #9085e9); /* violet */
-  --cat-8: light-dark(#e34948, #e66767); /* red */
+     (see dataviz skill: fixed hue order, CVD-safe adjacent pairs).
+     Koyu temada değerler açık temadakinden DAHA parlak; koyu zeminde kontrast
+     böyle sağlanıyor. */
+  --cat-1: light-dark(#2a78d6, #5aa6ff); /* blue */
+  --cat-2: light-dark(#eb6834, #ff8f60); /* orange */
+  --cat-3: light-dark(#1baf7a, #35d6a2); /* aqua */
+  --cat-4: light-dark(#eda100, #f5c04a); /* yellow */
+  --cat-5: light-dark(#e87ba4, #f795bb); /* magenta */
+  --cat-6: light-dark(#008300, #52d67f); /* green */
+  --cat-7: light-dark(#4a3aa7, #a99bff); /* violet */
+  --cat-8: light-dark(#e34948, #ff8080); /* red */
 }
 
 :root[data-theme="light"] {
@@ -55,24 +59,24 @@
 
 /* Vurgu rengi — ayarlardan seçilir, varsayılan yukarıdaki teal. */
 :root[data-accent="indigo"] {
-  --primary: light-dark(#4c4ddc, #8f8ef5);
-  --primary-hover: light-dark(#3b3cc4, #a5a4f8);
-  --primary-soft: light-dark(#e8e8fb, #262647);
-  --on-primary: light-dark(#ffffff, #16162e);
+  --primary: light-dark(#4c4ddc, #9a99ff);
+  --primary-hover: light-dark(#3b3cc4, #b3b1ff);
+  --primary-soft: light-dark(#e8e8fb, #212148);
+  --on-primary: light-dark(#ffffff, #101029);
 }
 
 :root[data-accent="amber"] {
-  --primary: light-dark(#b4690e, #f0ac4c);
-  --primary-hover: light-dark(#95560a, #f7c176);
-  --primary-soft: light-dark(#fdf0dd, #3a2b17);
-  --on-primary: light-dark(#ffffff, #2a1d0a);
+  --primary: light-dark(#b4690e, #f7bd66);
+  --primary-hover: light-dark(#95560a, #ffce8a);
+  --primary-soft: light-dark(#fdf0dd, #3a2a13);
+  --on-primary: light-dark(#ffffff, #2a1c06);
 }
 
 :root[data-accent="rose"] {
-  --primary: light-dark(#c04264, #ef8aa6);
-  --primary-hover: light-dark(#a3354f, #f5a6bc);
-  --primary-soft: light-dark(#fce9ee, #3d2028);
-  --on-primary: light-dark(#ffffff, #2b1119);
+  --primary: light-dark(#c04264, #ff94ae);
+  --primary-hover: light-dark(#a3354f, #ffadc1);
+  --primary-soft: light-dark(#fce9ee, #3d1e28);
+  --on-primary: light-dark(#ffffff, #2b0e17);
 }
 
 @theme inline {

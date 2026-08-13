@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { CardStripe } from "@/components/ui/card-stripe";
 import { useT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
@@ -33,7 +34,8 @@ export default function UploadPanel({
   }
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+      <CardStripe tint="var(--cat-1)" />
       <h2 className="text-base font-semibold text-foreground">{t("upload.title")}</h2>
       <p className="mt-1 text-sm text-muted">{t("upload.desc")}</p>
 

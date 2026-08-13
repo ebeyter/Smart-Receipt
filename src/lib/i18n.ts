@@ -10,7 +10,7 @@ import type { Lang } from "@/lib/settings";
  */
 const tr = {
   "nav.panel": "Panel",
-  "nav.plan": "Plan",
+  "nav.plan": "Planlama",
   "nav.settings": "Ayarlar",
   "plan.title": "Finansal Planlama",
   "plan.subtitle": "Bu ayki gelirin, harcaman ve kalanın tek ekranda.",
@@ -230,7 +230,7 @@ const tr = {
 
 const en: Record<keyof typeof tr, string> = {
   "nav.panel": "Dashboard",
-  "nav.plan": "Plan",
+  "nav.plan": "Planning",
   "nav.settings": "Settings",
   "plan.title": "Financial planning",
   "plan.subtitle": "This month's income, spending and what is left — on one screen.",

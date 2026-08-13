@@ -3,33 +3,43 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
- * Landing arka planı: çok soluk bir milimetrik kâğıt ızgarası, altında yükselen
- * bir çizgi grafik silueti ve iki yumuşak renk lekesi. Okunaklığı bozmamak için
- * hepsi düşük opaklıkta ve kenarlara doğru maskeyle söner.
+ * Landing zemini: soluk bir milimetrik kâğıt ızgarası, altta usulca yükselen
+ * çizgi grafik silueti ve iki yumuşak renk lekesi. Uygulama sayfaları bunun
+ * yerine TopBand kullanıyor.
  */
 export default function FinanceBackdrop() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+    >
       <div
         className="absolute inset-0 opacity-[0.5]"
         style={{
           backgroundImage:
             "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(to right, var(--border) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, black 20%, transparent 75%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, black 20%, transparent 75%)",
+          maskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, black 20%, transparent 75%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, black 20%, transparent 75%)",
         }}
       />
 
       <div
         className="absolute -top-56 left-1/4 h-[38rem] w-[38rem] rounded-full opacity-25 blur-3xl"
-        style={{ background: "radial-gradient(circle, var(--primary), transparent 65%)" }}
+        style={{
+          background:
+            "radial-gradient(circle, var(--primary), transparent 65%)",
+        }}
       />
       <div
         className="absolute -bottom-64 -right-24 h-[34rem] w-[34rem] rounded-full opacity-20 blur-3xl"
-        style={{ background: "radial-gradient(circle, var(--accent), transparent 65%)" }}
+        style={{
+          background: "radial-gradient(circle, var(--accent), transparent 65%)",
+        }}
       />
 
       <svg

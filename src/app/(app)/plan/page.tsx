@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSettings } from "@/components/SettingsProvider";
+import { CardStripe } from "@/components/ui/card-stripe";
 import { CATEGORY_META } from "@/lib/categories";
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/lib/i18n";
@@ -47,7 +48,8 @@ export default function PlanPage() {
         <p className="mt-1 text-base text-muted">{t("plan.subtitle")}</p>
       </div>
 
-      <section className="sr-rise grid gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:grid-cols-2">
+      <section className="sr-rise relative grid gap-3 overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur sm:grid-cols-2">
+        <CardStripe tint="var(--primary)" />
         <AmountField
           label={t("plan.income")}
           value={settings.monthlyIncome}
@@ -80,7 +82,8 @@ export default function PlanPage() {
         />
       </section>
 
-      <section className="sr-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="sr-rise relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-3)" />
         {income == null ? (
           <p className="text-base text-muted">{t("plan.noIncome")}</p>
         ) : (
@@ -132,7 +135,8 @@ export default function PlanPage() {
         )}
       </section>
 
-      <section className="sr-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="sr-rise relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-7)" />
         <h2 className="font-display text-base font-semibold text-foreground">{t("plan.trend")}</h2>
         <div className="mt-5 flex h-40 items-end gap-2.5">
           {months.map((month) => {
@@ -163,7 +167,8 @@ export default function PlanPage() {
         </div>
       </section>
 
-      <section className="sr-rise rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <section className="sr-rise relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+        <CardStripe tint="var(--cat-4)" />
         <h2 className="font-display text-base font-semibold text-foreground">
           {t("plan.categories")}
         </h2>

@@ -3,6 +3,7 @@
 import type { Receipt } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
+import { CardStripe } from "@/components/ui/card-stripe";
 import { useT } from "@/lib/i18n";
 
 type Field = keyof Pick<
@@ -43,7 +44,8 @@ export default function ResultsTable({
   const currency = visible.find((r) => r.currency)?.currency || "TRY";
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <section className="relative overflow-hidden rounded-2xl border border-border bg-surface/85 p-5 pl-6 shadow-sm backdrop-blur">
+      <CardStripe tint="var(--cat-2)" />
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-foreground">{t("results.title")}</h2>
         <span className="text-sm text-muted">{t("results.count", { count: visible.length })}</span>
